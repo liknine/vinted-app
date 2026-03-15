@@ -5,111 +5,86 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --bg: #f2f2f7; --card: #ffffff; --text: #1c1c1e; --hint: #8e8e93; --accent: #007aff; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 16px 16px 100px; }
-        .page { display: none; } .page.active { display: block; }
-        .card { background: var(--card); border-radius: 14px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        .btn { width: 100%; padding: 16px; background: var(--accent); color: #fff; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 10px; box-sizing: border-box; }
-        
-        /* Нижний Таббар */
-        .nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); display: flex; border-top: 1px solid #ddd; padding: 10px 0 25px; }
-        .nav-item { flex: 1; text-align: center; font-size: 10px; color: var(--hint); }
+        :root { --accent: #007aff; --bg: #f2f2f7; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 16px; padding-bottom: 100px; }
+        .card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        h3 { margin-top: 0; color: #1c1c1e; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
+        .btn { width: 100%; padding: 15px; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; }
+        .nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; border-top: 1px solid #ddd; padding: 10px 0 25px; }
+        .nav-item { flex: 1; text-align: center; font-size: 12px; color: #8e8e93; }
         .nav-item.active { color: var(--accent); }
-        
-        .copy-box { background: var(--bg); padding: 10px; border-radius: 8px; font-family: monospace; display: flex; justify-content: space-between; align-items: center; margin: 10px 0; }
+        .page { display: none; } .page.active { display: block; }
+        .status-badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; background: #e5e5ea; }
     </style>
 </head>
 <body>
 
 <div id="p-search" class="page active">
-    <h3>🔍 Поиск и фильтры</h3>
+    <h3>🔍 Мониторинг</h3>
     <div class="card">
-        <input type="text" id="name" placeholder="Название бренда/модели">
+        <input type="text" id="brand" placeholder="Название (Bape, Nike...)">
         <input type="text" id="size" placeholder="Размер">
-        <input type="number" id="price" placeholder="Макс цена €">
-        <select id="cond">
-            <option value="6">Новое с биркой</option>
-            <option value="1">Новое без бирки</option>
-            <option value="2">Отличное</option>
-        </select>
+        <input type="number" id="price" placeholder="Макс. цена (€)">
     </div>
-    <button class="btn" onclick="send()">ДОБАВИТЬ ПОИСК</button>
+    <button class="btn" onclick="sendData()">ЗАПУСТИТЬ ПОИСК</button>
 </div>
 
 <div id="p-profile" class="page">
     <div class="card" style="text-align: center;">
-        <h3 id="u_name">User</h3>
-        <p style="font-size: 12px; color: var(--hint);">Твой ID (нажми чтобы скопировать):</p>
-        <div class="copy-box" onclick="copyId()">
-            <span id="u_id">000000</span>
-            <small style="color: var(--accent)">COPY</small>
-        </div>
-        <p>Статус: <b style="color: #34c759;">FREE</b></p>
-    </div>
-    <h4>Активные поиски:</h4>
-    <div id="search_list" class="card" style="font-size: 13px; color: var(--hint); text-align: center;">
-        Все активные поиски отображаются в чате бота с кнопкой удаления.
-    </div>
-</div>
-
-<div id="p-prem" class="page">
-    <div class="card" style="background: linear-gradient(135deg, #007aff, #5856d6); color: #fff;">
-        <h3 style="margin: 0;">3 Друга = Месяц 🔥</h3>
-        <p style="font-size: 13px; opacity: 0.8;">Приглашай друзей и получай Premium бесплатно!</p>
-    </div>
-    <div class="card">
-        <h3>PREMIUM PLAN</h3>
-        <p>• 10$ / 30 Days<br>• Unlimited searches<br>• Fast scanning (30s)</p>
-        <button class="btn" style="background: #000;" onclick="tg.openTelegramLink('https://t.me/liknine')">СВЯЗАТЬСЯ СО МНОЙ</button>
+        <h2 id="u_name">User</h2>
+        <p style="color: #8e8e93;">Chat ID: <b id="u_id">000000</b></p>
+        <div class="status-badge" id="u_status">FREE</div>
+        <p id="u_days_text" style="font-size: 14px; margin-top: 10px;">Дней осталось: 0</p>
     </div>
 </div>
 
 <div class="nav">
     <div class="nav-item active" onclick="nav('p-search', this)">Поиск</div>
     <div class="nav-item" onclick="nav('p-profile', this)">Профиль</div>
-    <div class="nav-item" onclick="nav('p-prem', this)">Premium</div>
 </div>
 
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script>
     const tg = window.Telegram.WebApp;
-    tg.expand(); // Развернуть на весь экран
+    tg.expand();
 
-    // 1. Отображение ID и Имени в Профиле
+    // Получаем данные пользователя
     const user = tg.initDataUnsafe.user;
     if (user) {
         document.getElementById('u_id').innerText = user.id;
         document.getElementById('u_name').innerText = user.first_name;
     }
 
-    // 2. Логика работы кнопки "ДОБАВИТЬ ПОИСК"
-    function addSearch() {
+    // Получаем дни из URL (которые передал бот)
+    const params = new URLSearchParams(window.location.search);
+    const days = parseInt(params.get('days')) || 0;
+    if (days > 0) {
+        document.getElementById('u_status').innerText = "PREMIUM";
+        document.getElementById('u_status').style.background = "#34c759";
+        document.getElementById('u_status').style.color = "white";
+        document.getElementById('u_days_text').innerText = "Дней осталось: " + days;
+    }
+
+    function nav(page, el) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById(page).classList.add('active');
+        el.classList.add('active');
+    }
+
+    function sendData() {
         const brand = document.getElementById('brand').value;
-        const size = document.getElementById('size').value;
         const price = document.getElementById('price').value;
+        if (!brand || !price) return alert("Заполни все поля!");
 
-        if (!brand) {
-            alert("Введите название бренда!");
-            return;
-        }
-
-        // Формируем данные для бота
         const data = {
             action: "add_search",
             brand: brand,
-            size: size,
+            size: document.getElementById('size').value,
             price: price
         };
-
-        // ОТПРАВКА ДАННЫХ В БОТА
-        tg.sendData(JSON.stringify(data));
-        tg.close(); // Закрываем приложение после добавления
+        tg.sendData(JSON.stringify(data)); // Отправка боту
     }
-
-    // Привязываем функцию к кнопке
-    document.querySelector('.btn-add').onclick = addSearch;
 </script>
-
 </body>
 </html>
