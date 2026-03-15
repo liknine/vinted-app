@@ -2,65 +2,90 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --bg: var(--tg-theme-bg-color, #fff);
-            --text: var(--tg-theme-text-color, #000);
-            --hint: var(--tg-theme-hint-color, #999);
-            --btn: var(--tg-theme-button-color, #248bed);
-            --btn-text: var(--tg-theme-button-text-color, #fff);
+            --bg: var(--tg-theme-bg-color, #f4f4f9);
+            --sec-bg: var(--tg-theme-secondary-bg-color, #ffffff);
+            --text: var(--tg-theme-text-color, #222);
+            --hint: var(--tg-theme-hint-color, #8e8e93);
+            --btn: var(--tg-theme-button-color, #007aff);
+            --btn-text: var(--tg-theme-button-text-color, #ffffff);
         }
-        body { font-family: sans-serif; background-color: var(--bg); color: var(--text); padding: 15px; margin: 0; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-size: 14px; color: var(--hint); }
-        input, select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ccc; box-sizing: border-box; background: var(--bg); color: var(--text); }
-        button { width: 100%; padding: 15px; background-color: var(--btn); color: var(--btn-text); border: none; border-radius: 10px; font-weight: bold; font-size: 16px; margin-top: 10px; }
-        h3 { margin-top: 0; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 16px; padding-bottom: 80px; }
+        .card { background: var(--sec-bg); border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        label { display: block; font-size: 11px; font-weight: 600; color: var(--btn); text-transform: uppercase; margin-bottom: 5px; }
+        input, select { width: 100%; padding: 12px; border: 1px solid rgba(0,0,0,0.1); border-radius: 10px; background: var(--bg); color: var(--text); margin-bottom: 10px; box-sizing: border-box; font-size: 14px; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab { flex: 1; padding: 10px; text-align: center; background: var(--sec-bg); border-radius: 10px; font-size: 14px; font-weight: 600; }
+        .tab.active { background: var(--btn); color: var(--btn-text); }
+        .search-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .del-btn { color: #ff3b30; font-size: 12px; font-weight: 600; }
+        .main-btn { position: fixed; bottom: 15px; left: 15px; right: 15px; padding: 16px; background: var(--btn); color: var(--btn-text); border: none; border-radius: 12px; font-weight: 600; font-size: 16px; }
     </style>
 </head>
 <body>
-    <h3>🔎 Новый поиск</h3>
-    <div class="form-group">
-        <label>Что ищем?</label>
-        <input type="text" id="name" placeholder="Например: Stone Island Shadow Project">
-    </div>
-    <div class="form-group">
-        <label>Категория</label>
-        <select id="category">
-            <option value="👟 Обувь">👟 Обувь</option>
-            <option value="👕 Одежда">👕 Одежда</option>
+
+<div class="tabs">
+    <div class="tab active" onclick="showTab('create')">➕ Создать</div>
+    <div class="tab" onclick="showTab('list')">📋 Мои поиски</div>
+</div>
+
+<div id="create-section">
+    <div class="card">
+        <label>Бренд и Модель</label>
+        <input type="text" id="name" placeholder="Напр: Stone Island Ghost">
+        
+        <label>Размер</label>
+        <input type="text" id="size" placeholder="L, XL, 42...">
+
+        <label>Макс. Цена (€)</label>
+        <input type="number" id="price" placeholder="100">
+
+        <label>Состояние</label>
+        <select id="condition">
+            <option value="all">Любое</option>
+            <option value="new">Новое с биркой</option>
+            <option value="excellent">Отличное</option>
         </select>
     </div>
-    <div class="form-group">
-        <label>Максимальная цена (€)</label>
-        <input type="number" id="price" placeholder="40">
+    <button class="main-btn" onclick="sendData()">ДОБАВИТЬ В МОНИТОРИНГ</button>
+</div>
+
+<div id="list-section" style="display: none;">
+    <div class="card" id="search-list">
+        <p style="text-align: center; color: var(--hint);">Загрузка ваших поисков...</p>
     </div>
-    <button id="main_btn">ДОБАВИТЬ В СНАЙПЕР</button>
+</div>
 
-    <script>
-        let tg = window.Telegram.WebApp;
-        tg.expand();
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
 
-        document.getElementById('main_btn').onclick = function() {
-            let name = document.getElementById('name').value;
-            let price = document.getElementById('price').value;
-            
-            if (!name || !price) {
-                tg.showAlert("Заполни все поля!");
-                return;
-            }
+    function showTab(tab) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+        document.getElementById('create-section').style.display = tab === 'create' ? 'block' : 'none';
+        document.getElementById('list-section').style.display = tab === 'list' ? 'block' : 'none';
+        
+        if (tab === 'list') {
+            tg.sendData(JSON.stringify({action: 'get_list'}));
+        }
+    }
 
-            let data = {
-                name: name,
-                category: document.getElementById('category').value,
-                price: parseInt(price)
-            };
-
-            tg.sendData(JSON.stringify(data)); // Отправляем данные боту
-            tg.close();
+    function sendData() {
+        const data = {
+            action: 'add',
+            name: document.getElementById('name').value,
+            size: document.getElementById('size').value,
+            price: parseInt(document.getElementById('price').value),
+            condition: document.getElementById('condition').value
         };
-    </script>
+        if (!data.name || !data.price) return tg.showAlert("Заполни имя и цену!");
+        tg.sendData(JSON.stringify(data));
+        tg.close();
+    }
+</script>
 </body>
 </html>
