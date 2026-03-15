@@ -8,142 +8,104 @@
         :root {
             --bg: var(--tg-theme-bg-color, #f0f2f5);
             --sec-bg: var(--tg-theme-secondary-bg-color, #ffffff);
-            --text: var(--tg-theme-text-color, #000);
+            --text: var(--tg-theme-text-color, #222);
             --hint: var(--tg-theme-hint-color, #999);
             --btn: var(--tg-theme-button-color, #007aff);
             --btn-text: var(--tg-theme-button-text-color, #ffffff);
             --accent: #34c759;
         }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; padding-bottom: 90px; }
-        .page { display: none; padding: 16px; animation: fadeIn 0.3s ease; }
-        .page.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 16px 16px 100px; line-height: 1.5; }
+        h3 { margin-top: 0; font-weight: 700; }
+        .card { background: var(--sec-bg); border-radius: 16px; padding: 18px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.03); }
+        label { display: block; font-size: 11px; font-weight: 700; color: var(--btn); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        input, select { width: 100%; padding: 14px; border: 1px solid rgba(0,0,0,0.08); border-radius: 12px; background: var(--bg); color: var(--text); margin-bottom: 15px; box-sizing: border-box; font-size: 15px; outline: none; transition: 0.2s; }
+        input:focus { border-color: var(--btn); }
+        
+        .main-btn { width: 100%; padding: 18px; background: var(--btn); color: var(--btn-text); border: none; border-radius: 16px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 15px rgba(0,122,255,0.3); cursor: pointer; }
+        .main-btn:active { transform: scale(0.98); opacity: 0.9; }
 
-        /* Навигация */
-        .nav { position: fixed; bottom: 0; width: 100%; background: var(--sec-bg); display: flex; border-top: 1px solid rgba(0,0,0,0.1); padding: 10px 0; z-index: 100; }
-        .nav-item { flex: 1; text-align: center; font-size: 10px; color: var(--hint); transition: 0.2s; }
+        .contact-btn { width: 100%; padding: 12px; background: rgba(0,122,255,0.1); color: var(--btn); border: none; border-radius: 10px; font-weight: 600; cursor: pointer; }
+        
+        /* Таббар */
+        .nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--sec-bg); display: flex; border-top: 1px solid rgba(0,0,0,0.05); padding: 10px 5px 25px; z-index: 100; }
+        .nav-item { flex: 1; text-align: center; font-size: 10px; color: var(--hint); font-weight: 500; }
         .nav-item.active { color: var(--btn); }
         .nav-item svg { display: block; margin: 0 auto 4px; width: 24px; height: 24px; }
-
-        /* Карточки и инпуты */
-        .card { background: var(--sec-bg); border-radius: 14px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        label { display: block; font-size: 12px; font-weight: 600; color: var(--btn); margin-bottom: 8px; text-transform: uppercase; }
-        input, select { width: 100%; padding: 12px; border: 1px solid rgba(0,0,0,0.1); border-radius: 10px; background: var(--bg); color: var(--text); margin-bottom: 15px; box-sizing: border-box; }
-        
-        /* Кнопки */
-        .main-btn { width: 100%; padding: 16px; background: var(--btn); color: var(--btn-text); border: none; border-radius: 12px; font-weight: 700; font-size: 16px; margin-top: 10px; }
-        .ref-card { background: linear-gradient(135deg, #007aff, #5856d6); color: white; padding: 20px; border-radius: 16px; text-align: center; }
-        
-        .badge { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 12px; background: var(--bg); color: var(--text); margin-top: 5px; }
     </style>
 </head>
 <body>
 
-<div id="search" class="page active">
-    <h3>🎯 Новый поиск</h3>
+<div id="search_page">
+    <h3>🎯 Настройка снайпера</h3>
+    
     <div class="card">
-        <label>Бренд и модель</label>
-        <input type="text" id="name" placeholder="Напр: Arc'teryx Shell">
+        <label>Что ищем?</label>
+        <input type="text" id="name" placeholder="Напр: Nike SB Dunk">
         
         <label>Размер</label>
-        <input type="text" id="size" placeholder="L, 42, XL...">
+        <input type="text" id="size" placeholder="Любой или L, 42...">
         
         <label>Макс. цена (€)</label>
-        <input type="number" id="price" placeholder="150">
+        <input type="number" id="price" placeholder="0.00">
+    </div>
 
-        <label>Состояние</label>
+    <div class="card">
+        <label>Состояние товара</label>
         <select id="condition">
-            <option value="any">Любое</option>
-            <option value="new">Новое</option>
+            <option value="all">Любое</option>
+            <option value="new_with_tags">Новое с биркой</option>
+            <option value="new_no_tags">Новое без бирки</option>
             <option value="excellent">Отличное</option>
+            <option value="very_good">Хорошее</option>
+            <option value="good">Нормальное</option>
         </select>
     </div>
-    <button class="main-btn" onclick="send('add')">Запустить снайпер</button>
-</div>
 
-<div id="profile" class="page">
-    <h3>👤 Мой профиль</h3>
-    <div class="card" style="text-align: center;">
-        <div style="font-size: 40px;">🕶️</div>
-        <h4 id="user_name">Пользователь</h4>
-        <div class="badge">Статус: <span style="color: var(--accent)">Базовый</span></div>
-    </div>
     <div class="card">
-        <p>Статистика:</p>
-        <div style="display: flex; justify-content: space-around; text-align: center;">
-            <div><strong>0</strong><br><small>Находок</small></div>
-            <div><strong>0</strong><br><small>Поисков</small></div>
-        </div>
+        <label>Поддержка и оплата</label>
+        <p style="font-size: 13px; margin-bottom: 12px; color: var(--hint);">Для покупки Premium-подписки или при возникновении вопросов пишите напрямую:</p>
+        <button class="contact-btn" onclick="tg.openTelegramLink('https://t.me/liknine')">📩 Написать @liknine</button>
     </div>
-</div>
 
-<div id="premium" class="page">
-    <h3>💎 Premium доступ</h3>
-    <div class="ref-card">
-        <h4>Месяц бесплатно!</h4>
-        <p style="font-size: 14px; opacity: 0.9;">Пригласи 3 друзей и получи месяц подписки в подарок</p>
-        <button onclick="copyRef()" style="background: white; color: #007aff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600;">Скопировать ссылку</button>
-    </div>
-    <div class="card" style="margin-top: 20px;">
-        <p>Что дает подписка:</p>
-        <ul style="font-size: 14px; padding-left: 20px;">
-            <li>Безлимитное количество поисков</li>
-            <li>Приоритетная проверка (каждые 30 сек)</li>
-            <li>Фильтр по состоянию товара</li>
-        </ul>
-        <button class="main-btn" style="background: var(--accent);" onclick="contactAdmin()">Связаться с админом</button>
-    </div>
+    <button class="main-btn" id="submit_btn">ЗАПУСТИТЬ СНАЙПЕР</button>
 </div>
 
 <div class="nav">
-    <div class="nav-item active" onclick="nav('search')">
+    <div class="nav-item active">
         <svg fill="currentColor" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
         Поиск
     </div>
-    <div class="nav-item" onclick="nav('profile')">
+    <div class="nav-item" onclick="tg.showAlert('Раздел в разработке')">
         <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
         Профиль
-    </div>
-    <div class="nav-item" onclick="nav('premium')">
-        <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-        Premium
     </div>
 </div>
 
 <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
-    document.getElementById('user_name').innerText = tg.initDataUnsafe.user?.first_name || "Пользователь";
+    tg.ready();
 
-    function nav(pageId) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        document.getElementById(pageId).classList.add('active');
-        event.currentTarget.classList.add('active');
-        tg.HapticFeedback.selectionChanged();
-    }
+    document.getElementById('submit_btn').onclick = function() {
+        const name = document.getElementById('name').value;
+        const price = document.getElementById('price').value;
+        
+        if (!name || !price) {
+            tg.showAlert("Заполни название и цену!");
+            return;
+        }
 
-    function send(action) {
         const data = {
-            action: action,
-            name: document.getElementById('name').value,
+            action: 'add',
+            name: name,
             size: document.getElementById('size').value,
-            price: document.getElementById('price').value,
+            price: price,
             condition: document.getElementById('condition').value
         };
+
         tg.sendData(JSON.stringify(data));
-    }
-
-    function contactAdmin() {
-        tg.openTelegramLink("https://t.me/liknine");
-    }
-
-    function copyRef() {
-        const userId = tg.initDataUnsafe.user?.id || 0;
-        const refLink = `https://t.me/твой_бот_username?start=${userId}`;
-        navigator.clipboard.writeText(refLink);
-        tg.showAlert("Ссылка скопирована! Отправь её 3 друзьям.");
-    }
+        tg.close();
+    };
 </script>
 </body>
 </html>
