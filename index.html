@@ -73,26 +73,27 @@
 
 <script>
     const tg = window.Telegram.WebApp;
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // Получаем ID
+    const userId = tg.initDataUnsafe.user?.id || "Неизвестно";
+    document.getElementById('u_id').innerText = userId;
     document.getElementById('u_name').innerText = tg.initDataUnsafe.user?.first_name || "User";
-    document.getElementById('u_id').innerText = tg.initDataUnsafe.user?.id || "000000";
 
-    function nav(id, el) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        el.classList.add('active');
+    // Получаем дни подписки из ссылки, которую прислал бот
+    const days = urlParams.get('days') || "0";
+    document.getElementById('u_days').innerText = days;
+    
+    if (parseInt(days) > 0) {
+        const statusEl = document.getElementById('u_status');
+        statusEl.innerText = "PREMIUM";
+        statusEl.className = "status-prem"; // станет зеленым
     }
 
-    function copyId() {
-        navigator.clipboard.writeText(document.getElementById('u_id').innerText);
-        tg.showAlert("ID скопирован!");
-    }
-
-    function send() {
-        const data = { action: 'add', name: document.getElementById('name').value, price: document.getElementById('price').value, size: document.getElementById('size').value, condition: document.getElementById('cond').value };
-        tg.sendData(JSON.stringify(data));
-        tg.close();
-    }
+    // Про поиски: так как Mini App не видит базу напрямую, 
+    // лучший вариант для тебя сейчас — оставить управление через чат,
+    // так как бот уже присылает кнопку "Удалить" под каждым поиском.
 </script>
+
 </body>
 </html>
