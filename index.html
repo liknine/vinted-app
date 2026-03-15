@@ -2,68 +2,91 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Твои стили здесь (белые карточки, синие кнопки) */
-        body { font-family: sans-serif; background: #f0f2f5; padding: 15px; }
-        .card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 10px; text-align: center; }
-        .input-group input { width: 90%; padding: 10px; margin: 5px; border-radius: 8px; border: 1px solid #ddd; }
-        .btn-main { background: #007bff; color: white; border: none; padding: 15px; width: 100%; border-radius: 10px; font-weight: bold; }
-        .nav { position: fixed; bottom: 0; left: 0; right: 0; display: flex; background: white; padding: 10px; border-top: 1px solid #eee; }
-        .nav div { flex: 1; text-align: center; color: #999; }
-        .active { color: #007bff !important; }
+        :root { --blue: #007aff; --bg: #f2f2f7; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 15px; padding-bottom: 100px; }
+        .card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        h3 { margin: 0 0 15px 0; font-size: 18px; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 15px; }
+        .btn { width: 100%; padding: 15px; background: var(--blue); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 16px; }
+        .nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; border-top: 1px solid #ddd; padding: 10px 0 25px; }
+        .nav-item { flex: 1; text-align: center; color: #8e8e93; font-size: 12px; }
+        .nav-item.active { color: var(--blue); }
+        .page { display: none; } .page.active { display: block; }
+        .badge { display: inline-block; padding: 5px 12px; border-radius: 20px; font-weight: bold; background: #eee; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-<div id="page-search">
+<div id="p-search" class="page active">
     <div class="card">
         <h3>🔍 Поиск и фильтры</h3>
-        <input type="text" id="brand" placeholder="Название бренда">
+        <input type="text" id="brand" placeholder="Название бренда/модели">
         <input type="text" id="size" placeholder="Размер">
         <input type="number" id="price" placeholder="Макс цена €">
-        <button class="btn-main" onclick="addSearch()">ДОБАВИТЬ ПОИСК</button>
+        <select id="cond">
+            <option value="new_with_tags">Новое с биркой</option>
+            <option value="new_no_tags">Новое без бирки</option>
+            <option value="very_good">Очень хорошее</option>
+        </select>
+        <button class="btn" onclick="addSearch()">ДОБАВИТЬ ПОИСК</button>
     </div>
 </div>
 
-<div id="page-profile" style="display:none;">
-    <div class="card">
-        <h2>User</h2>
-        <p>Chat ID: <b id="u_id">000000</b></p>
-        <p id="u_status">FREE</p>
-        <p>Дней осталось: <span id="u_days">0</span></p>
+<div id="p-profile" class="page">
+    <div class="card" style="text-align: center;">
+        <h2 id="u_name">User</h2>
+        <p style="color: #8e8e93;">ТВОЙ CHAT ID:</p>
+        <div style="background: #f2f2f7; padding: 10px; border-radius: 8px; font-family: monospace;" id="u_id">000000</div>
+        <div class="badge" id="u_status">FREE</div>
+        <p id="u_days" style="font-size: 13px; color: #8e8e93;">Дней осталось: 0</p>
     </div>
 </div>
 
 <div class="nav">
-    <div onclick="show('page-search', this)" class="active">Поиск</div>
-    <div onclick="show('page-profile', this)">Профиль</div>
+    <div class="nav-item active" onclick="nav('p-search', this)">Поиск</div>
+    <div class="nav-item" onclick="nav('p-profile', this)">Профиль</div>
 </div>
 
 <script>
     const tg = window.Telegram.WebApp;
-    const params = new URLSearchParams(window.location.search);
+    tg.expand();
 
-    // ОТОБРАЖАЕМ ID ИЗ БОТА
-    document.getElementById('u_id').innerText = params.get('id') || "Не найден";
-    const days = params.get('days') || "0";
-    document.getElementById('u_days').innerText = days;
-    if(parseInt(days) > 0) document.getElementById('u_status').innerText = "💎 PREMIUM";
+    // Читаем ID и подписку из ссылки, которую прислал бот
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('id') || "Не определен";
+    const days = urlParams.get('days') || "0";
 
-    function show(id, el) {
-        document.getElementById('page-search').style.display = 'none';
-        document.getElementById('page-profile').style.display = 'none';
-        document.getElementById(id).style.display = 'block';
-        document.querySelectorAll('.nav div').forEach(d => d.classList.remove('active'));
+    document.getElementById('u_id').innerText = userId;
+    document.getElementById('u_name').innerText = tg.initDataUnsafe.user?.first_name || "User";
+    document.getElementById('u_days').innerText = "Дней осталось: " + days;
+
+    if (parseInt(days) > 0) {
+        const s = document.getElementById('u_status');
+        s.innerText = "PREMIUM";
+        s.style.background = "#34c759";
+        s.style.color = "white";
+    }
+
+    function nav(id, el) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
         el.classList.add('active');
     }
 
     function addSearch() {
+        const brand = document.getElementById('brand').value;
+        const price = document.getElementById('price').value;
+        if (!brand || !price) return alert("Заполни бренд и цену!");
+
         const data = {
-            action: "add_search",
-            brand: document.getElementById('brand').value,
+            brand: brand,
             size: document.getElementById('size').value,
-            price: document.getElementById('price').value
+            price: price,
+            cond: document.getElementById('cond').value
         };
         tg.sendData(JSON.stringify(data));
     }
