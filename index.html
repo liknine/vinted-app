@@ -71,28 +71,44 @@
     <div class="nav-item" onclick="nav('p-prem', this)">Premium</div>
 </div>
 
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script>
     const tg = window.Telegram.WebApp;
-    const urlParams = new URLSearchParams(window.location.search);
-    
-    // Получаем ID
-    const userId = tg.initDataUnsafe.user?.id || "Неизвестно";
-    document.getElementById('u_id').innerText = userId;
-    document.getElementById('u_name').innerText = tg.initDataUnsafe.user?.first_name || "User";
+    tg.expand(); // Развернуть на весь экран
 
-    // Получаем дни подписки из ссылки, которую прислал бот
-    const days = urlParams.get('days') || "0";
-    document.getElementById('u_days').innerText = days;
-    
-    if (parseInt(days) > 0) {
-        const statusEl = document.getElementById('u_status');
-        statusEl.innerText = "PREMIUM";
-        statusEl.className = "status-prem"; // станет зеленым
+    // 1. Отображение ID и Имени в Профиле
+    const user = tg.initDataUnsafe.user;
+    if (user) {
+        document.getElementById('u_id').innerText = user.id;
+        document.getElementById('u_name').innerText = user.first_name;
     }
 
-    // Про поиски: так как Mini App не видит базу напрямую, 
-    // лучший вариант для тебя сейчас — оставить управление через чат,
-    // так как бот уже присылает кнопку "Удалить" под каждым поиском.
+    // 2. Логика работы кнопки "ДОБАВИТЬ ПОИСК"
+    function addSearch() {
+        const brand = document.getElementById('brand').value;
+        const size = document.getElementById('size').value;
+        const price = document.getElementById('price').value;
+
+        if (!brand) {
+            alert("Введите название бренда!");
+            return;
+        }
+
+        // Формируем данные для бота
+        const data = {
+            action: "add_search",
+            brand: brand,
+            size: size,
+            price: price
+        };
+
+        // ОТПРАВКА ДАННЫХ В БОТА
+        tg.sendData(JSON.stringify(data));
+        tg.close(); // Закрываем приложение после добавления
+    }
+
+    // Привязываем функцию к кнопке
+    document.querySelector('.btn-add').onclick = addSearch;
 </script>
 
 </body>
