@@ -2,88 +2,70 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --accent: #007aff; --bg: #f2f2f7; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 16px; padding-bottom: 100px; }
-        .card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        h3 { margin-top: 0; color: #1c1c1e; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
-        .btn { width: 100%; padding: 15px; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; }
-        .nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; border-top: 1px solid #ddd; padding: 10px 0 25px; }
-        .nav-item { flex: 1; text-align: center; font-size: 12px; color: #8e8e93; }
-        .nav-item.active { color: var(--accent); }
-        .page { display: none; } .page.active { display: block; }
-        .status-badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; background: #e5e5ea; }
+        /* Твои стили здесь (белые карточки, синие кнопки) */
+        body { font-family: sans-serif; background: #f0f2f5; padding: 15px; }
+        .card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 10px; text-align: center; }
+        .input-group input { width: 90%; padding: 10px; margin: 5px; border-radius: 8px; border: 1px solid #ddd; }
+        .btn-main { background: #007bff; color: white; border: none; padding: 15px; width: 100%; border-radius: 10px; font-weight: bold; }
+        .nav { position: fixed; bottom: 0; left: 0; right: 0; display: flex; background: white; padding: 10px; border-top: 1px solid #eee; }
+        .nav div { flex: 1; text-align: center; color: #999; }
+        .active { color: #007bff !important; }
     </style>
 </head>
 <body>
 
-<div id="p-search" class="page active">
-    <h3>🔍 Мониторинг</h3>
+<div id="page-search">
     <div class="card">
-        <input type="text" id="brand" placeholder="Название (Bape, Nike...)">
+        <h3>🔍 Поиск и фильтры</h3>
+        <input type="text" id="brand" placeholder="Название бренда">
         <input type="text" id="size" placeholder="Размер">
-        <input type="number" id="price" placeholder="Макс. цена (€)">
+        <input type="number" id="price" placeholder="Макс цена €">
+        <button class="btn-main" onclick="addSearch()">ДОБАВИТЬ ПОИСК</button>
     </div>
-    <button class="btn" onclick="sendData()">ЗАПУСТИТЬ ПОИСК</button>
 </div>
 
-<div id="p-profile" class="page">
-    <div class="card" style="text-align: center;">
-        <h2 id="u_name">User</h2>
-        <p style="color: #8e8e93;">Chat ID: <b id="u_id">000000</b></p>
-        <div class="status-badge" id="u_status">FREE</div>
-        <p id="u_days_text" style="font-size: 14px; margin-top: 10px;">Дней осталось: 0</p>
+<div id="page-profile" style="display:none;">
+    <div class="card">
+        <h2>User</h2>
+        <p>Chat ID: <b id="u_id">000000</b></p>
+        <p id="u_status">FREE</p>
+        <p>Дней осталось: <span id="u_days">0</span></p>
     </div>
 </div>
 
 <div class="nav">
-    <div class="nav-item active" onclick="nav('p-search', this)">Поиск</div>
-    <div class="nav-item" onclick="nav('p-profile', this)">Профиль</div>
+    <div onclick="show('page-search', this)" class="active">Поиск</div>
+    <div onclick="show('page-profile', this)">Профиль</div>
 </div>
 
 <script>
     const tg = window.Telegram.WebApp;
-    tg.expand();
-
-    // Получаем данные пользователя
-    const user = tg.initDataUnsafe.user;
-    if (user) {
-        document.getElementById('u_id').innerText = user.id;
-        document.getElementById('u_name').innerText = user.first_name;
-    }
-
-    // Получаем дни из URL (которые передал бот)
     const params = new URLSearchParams(window.location.search);
-    const days = parseInt(params.get('days')) || 0;
-    if (days > 0) {
-        document.getElementById('u_status').innerText = "PREMIUM";
-        document.getElementById('u_status').style.background = "#34c759";
-        document.getElementById('u_status').style.color = "white";
-        document.getElementById('u_days_text').innerText = "Дней осталось: " + days;
-    }
 
-    function nav(page, el) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById(page).classList.add('active');
+    // ОТОБРАЖАЕМ ID ИЗ БОТА
+    document.getElementById('u_id').innerText = params.get('id') || "Не найден";
+    const days = params.get('days') || "0";
+    document.getElementById('u_days').innerText = days;
+    if(parseInt(days) > 0) document.getElementById('u_status').innerText = "💎 PREMIUM";
+
+    function show(id, el) {
+        document.getElementById('page-search').style.display = 'none';
+        document.getElementById('page-profile').style.display = 'none';
+        document.getElementById(id).style.display = 'block';
+        document.querySelectorAll('.nav div').forEach(d => d.classList.remove('active'));
         el.classList.add('active');
     }
 
-    function sendData() {
-        const brand = document.getElementById('brand').value;
-        const price = document.getElementById('price').value;
-        if (!brand || !price) return alert("Заполни все поля!");
-
+    function addSearch() {
         const data = {
             action: "add_search",
-            brand: brand,
+            brand: document.getElementById('brand').value,
             size: document.getElementById('size').value,
-            price: price
+            price: document.getElementById('price').value
         };
-        tg.sendData(JSON.stringify(data)); // Отправка боту
+        tg.sendData(JSON.stringify(data));
     }
 </script>
 </body>
