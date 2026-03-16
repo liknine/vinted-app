@@ -15,6 +15,7 @@
             --border: #38383A;
             --danger: #FF453A;
             --gold: #FFD60A;
+            --green: #30D158;
         }
 
         body {
@@ -54,83 +55,42 @@
             color: var(--primary);
         }
 
-        /* Content Sections */
-        .content {
-            display: none;
-            padding: 20px;
-            animation: fadeIn 0.3s ease;
-        }
+        .content { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
         .content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card { background: var(--surface); border-radius: 12px; padding: 16px; margin-bottom: 20px; }
         
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Forms & Inputs (Apple Style) */
-        .card {
-            background: var(--surface);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 20px;
-        }
-
         .input-group { margin-bottom: 16px; }
-        .input-group:last-child { margin-bottom: 0; }
-        
-        label {
-            display: block;
-            font-size: 13px;
-            color: var(--secondary);
-            margin-bottom: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
+        label { display: block; font-size: 13px; color: var(--secondary); margin-bottom: 6px; text-transform: uppercase; }
         input, select {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border);
-            color: var(--text);
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 16px;
-            box-sizing: border-box;
-            outline: none;
+            width: 100%; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border);
+            color: var(--text); padding: 12px; border-radius: 8px; font-size: 16px; box-sizing: border-box; outline: none;
         }
-        
         input:focus, select:focus { border-color: var(--primary); }
 
-        /* Button */
         button.btn {
-            width: 100%;
-            background: var(--primary);
-            color: #fff;
-            border: none;
-            padding: 14px;
-            border-radius: 12px;
-            font-size: 17px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 10px;
+            width: 100%; background: var(--primary); color: #fff; border: none; padding: 14px;
+            border-radius: 12px; font-size: 17px; font-weight: 600; cursor: pointer; margin-top: 10px;
         }
-        button.btn:active { opacity: 0.8; transform: scale(0.98); }
+        button.btn:active { transform: scale(0.98); }
 
-        /* Profile & Premium Status */
-        .profile-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .status-badge {
-            display: inline-block;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 14px;
-            margin-top: 10px;
-        }
+        /* Profile & Searches */
+        .profile-header { text-align: center; margin-bottom: 20px; }
+        .status-badge { display: inline-block; padding: 6px 16px; border-radius: 20px; font-weight: bold; font-size: 14px; margin-top: 5px; }
         .status-free { background: rgba(255, 69, 58, 0.1); color: var(--danger); }
         .status-premium { background: rgba(255, 214, 10, 0.1); color: var(--gold); }
+        
+        .search-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 8px; margin-bottom: 10px;
+        }
+        .search-info { font-size: 15px; }
+        .search-price { color: var(--green); font-weight: bold; font-size: 13px; }
+        .delete-btn { background: rgba(255, 69, 58, 0.2); color: var(--danger); border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+
+        /* Promo block */
+        .promo-box { border: 1px dashed var(--primary); background: rgba(10, 132, 255, 0.05); }
     </style>
 </head>
 <body>
@@ -170,41 +130,64 @@
 
     <!-- ВКЛАДКА ПРОФИЛЬ -->
     <div id="profile" class="content">
-        <div class="profile-header">
-            <h2 id="user-name">Загрузка...</h2>
-            <p style="color: var(--secondary)">ID: <span id="user-id">...</span></p>
+        <div class="card profile-header">
+            <h2 id="user-name" style="margin: 0 0 5px 0;">Загрузка...</h2>
+            <p style="color: var(--secondary); font-size: 14px; margin: 0 0 10px 0;">Chat ID: <span id="user-id">...</span></p>
             <div id="status-container"></div>
+        </div>
+
+        <h3 style="font-size: 16px; margin-bottom: 10px; color: var(--secondary);">Ваши активные поиски:</h3>
+        <div id="searches-container">
+            <!-- Сюда подгрузятся поиски -->
+            <p style="color: var(--secondary); font-size: 14px; text-align: center;">Загрузка...</p>
         </div>
     </div>
 
     <!-- ВКЛАДКА PREMIUM -->
     <div id="premium" class="content">
-        <div class="card" style="text-align: center;">
-            <h2 style="color: var(--gold)">Vinted PRO</h2>
-            <p style="color: var(--secondary); font-size: 15px;">
-                Получайте уведомления быстрее других.<br>
-                Мониторинг 24/7 каждую минуту.
+        <!-- Акция -->
+        <div class="card promo-box" style="text-align: center;">
+            <h3 style="color: var(--primary); margin-top: 0;">🎁 АКЦИЯ</h3>
+            <p style="font-size: 15px; line-height: 1.5; margin-bottom: 0;">
+                Пригласи <b>3 друзей</b> и получи<br>
+                <span style="color: var(--gold); font-weight: bold;">месяц подписки БЕСПЛАТНО!</span>
             </p>
-            <ul style="text-align: left; color: var(--secondary); font-size: 14px; line-height: 1.8;">
-                <li>🔥 Неограниченное число поисков</li>
-                <li>⚡ Мгновенные push-уведомления</li>
-                <li>📸 Фотографии товаров прямо в чат</li>
+        </div>
+
+        <!-- Подписка -->
+        <div class="card" style="text-align: center;">
+            <h2 style="color: var(--gold); margin-top: 0;">Vinted PRO</h2>
+            <ul style="text-align: left; color: var(--text); font-size: 15px; line-height: 2; margin-bottom: 20px; list-style-type: '⚡ ';">
+                <li><b>30 days</b> access</li>
+                <li><b>Unlimited</b> searches</li>
+                <li><b>Fast</b> instant alerts</li>
             </ul>
-            <button class="btn" style="background: var(--gold); color: #000;" onclick="buyPremium()">Купить подписку</button>
+            <div style="font-size: 24px; font-weight: bold; margin-bottom: 15px;">10$ <span style="font-size: 14px; color: var(--secondary); font-weight: normal;">/ month</span></div>
+            
+            <button class="btn" onclick="tg.openTelegramLink('https://t.me/liknine')">Связаться со мной (@liknine)</button>
         </div>
     </div>
 
     <script>
         let tg = window.Telegram.WebApp;
-        tg.expand(); // Открываем на весь экран
+        tg.expand();
 
-        // Получаем параметры из URL (?id=...&days=...)
+        // 1. Получаем данные из ссылки (URL)
         const urlParams = new URLSearchParams(window.location.search);
         const userId = urlParams.get('id') || tg.initDataUnsafe?.user?.id || 'Неизвестно';
         const premiumDays = parseInt(urlParams.get('days') || '0');
         const userName = tg.initDataUnsafe?.user?.first_name || 'Пользователь';
+        
+        // Достаем JSON с поисками из URL
+        let userSearches = [];
+        try {
+            const searchesRaw = urlParams.get('searches');
+            if (searchesRaw) {
+                userSearches = JSON.parse(decodeURIComponent(searchesRaw));
+            }
+        } catch(e) { console.error("Ошибка парсинга поисков"); }
 
-        // Заполняем профиль
+        // 2. Заполняем Профиль
         document.getElementById('user-name').innerText = userName;
         document.getElementById('user-id').innerText = userId;
         
@@ -215,41 +198,68 @@
             statusContainer.innerHTML = `<div class="status-badge status-free">FREE-ВЕРСИЯ</div>`;
         }
 
-        // Переключение вкладок
+        // 3. Рисуем список поисков
+        const searchesContainer = document.getElementById('searches-container');
+        if (userSearches.length === 0) {
+            searchesContainer.innerHTML = `<p style="color: var(--secondary); font-size: 14px; text-align: center;">У вас пока нет активных поисков.</p>`;
+        } else {
+            searchesContainer.innerHTML = '';
+            userSearches.forEach(search => {
+                const priceText = search.max_price > 0 ? `до ${search.max_price}€` : 'любая цена';
+                const brandText = search.brand || 'Любой бренд';
+                
+                const itemHTML = `
+                    <div class="search-item">
+                        <div>
+                            <div class="search-info"><b>${brandText}</b></div>
+                            <div class="search-price">${priceText}</div>
+                        </div>
+                        <button class="delete-btn" onclick="deleteSearch(${search.id})">Удалить</button>
+                    </div>
+                `;
+                searchesContainer.innerHTML += itemHTML;
+            });
+        }
+
+        // 4. Переключение вкладок
         function switchTab(tabId) {
             document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-            
             document.getElementById(tabId).classList.add('active');
             event.target.classList.add('active');
-            tg.HapticFeedback.impactOccurred('light'); // Виброотклик
+            tg.HapticFeedback.impactOccurred('light');
         }
 
-        // Отправка данных боту
+        // 5. Отправка нового поиска
         function sendSearch() {
             if (premiumDays <= 0) {
                 tg.showAlert("У вас нет Premium-подписки для добавления поисков!");
                 return;
             }
-
             const data = {
+                action: "add",
                 brand: document.getElementById('brand').value,
                 size: document.getElementById('size').value,
                 max_price: document.getElementById('max_price').value,
                 condition: document.getElementById('condition').value
             };
-
             if (!data.brand && !data.max_price) {
                 tg.showAlert("Заполните хотя бы бренд или цену!");
                 return;
             }
-
             tg.HapticFeedback.notificationOccurred('success');
-            tg.sendData(JSON.stringify(data)); // Отправляет данные и закрывает WebApp
+            tg.sendData(JSON.stringify(data)); 
         }
 
-        function buyPremium() {
-            tg.showAlert("Для покупки обратитесь к администратору или настройте авто-оплату в коде.");
+        // 6. Удаление поиска
+        function deleteSearch(searchId) {
+            tg.HapticFeedback.impactOccurred('medium');
+            tg.showConfirm("Удалить этот поиск?", function(isConfirmed) {
+                if(isConfirmed) {
+                    const data = { action: "delete", search_id: searchId };
+                    tg.sendData(JSON.stringify(data)); // Отправляет данные боту и закрывает WebApp
+                }
+            });
         }
     </script>
 </body>
