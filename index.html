@@ -3,82 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vinted Sniper</title>
+    <title>Vinted Sniper PRO</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --bg: #000000;
-            --surface: #1C1C1E;
-            --primary: #0A84FF;
-            --text: #FFFFFF;
-            --secondary: #8E8E93;
-            --border: #38383A;
-            --danger: #FF453A;
-            --gold: #FFD60A;
-            --green: #30D158;
+            --bg: #f2f2f7;
+            --surface: #ffffff;
+            --primary: #007aff;
+            --text: #000000;
+            --secondary: #8e8e93;
+            --border: #e5e5ea;
+            --danger: #ff3b30;
+            --gold: #ff9500;
+            --green: #34c759;
+        }
+
+        /* Темная тема (адаптивная) */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #000000; --surface: #1c1c1e; --text: #ffffff;
+                --border: #38383a; --primary: #0a84ff;
+            }
         }
 
         body {
-            margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            -webkit-font-smoothing: antialiased;
+            margin: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+            background-color: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased;
         }
 
+        /* Вкладки */
         .tab-bar {
-            display: flex;
-            background: rgba(28, 28, 30, 0.9);
-            backdrop-filter: blur(20px);
-            padding: 10px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            border-bottom: 0.5px solid var(--border);
+            display: flex; background: rgba(var(--surface), 0.8); backdrop-filter: blur(20px);
+            padding: 10px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border);
         }
-
         .tab {
-            flex: 1; text-align: center; padding: 8px 0; font-size: 14px;
-            font-weight: 600; color: var(--secondary); cursor: pointer;
-            border-radius: 8px; transition: 0.3s;
+            flex: 1; text-align: center; padding: 10px 0; font-size: 15px; font-weight: 600;
+            color: var(--secondary); cursor: pointer; border-radius: 8px; transition: 0.3s;
         }
-
-        .tab.active { background: var(--surface); color: var(--primary); }
+        .tab.active { background: var(--primary); color: #fff; }
 
         .content { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
         .content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .card { background: var(--surface); border-radius: 12px; padding: 16px; margin-bottom: 20px; }
-        
+        /* Карточки и инпуты */
+        .card { background: var(--surface); border-radius: 14px; padding: 16px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .input-group { margin-bottom: 16px; }
-        label { display: block; font-size: 13px; color: var(--secondary); margin-bottom: 6px; text-transform: uppercase; }
-        input, select {
-            width: 100%; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border);
-            color: var(--text); padding: 12px; border-radius: 8px; font-size: 16px; box-sizing: border-box; outline: none;
+        label { display: block; font-size: 13px; font-weight: 600; color: var(--secondary); margin-bottom: 8px; text-transform: uppercase; }
+        input {
+            width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text);
+            padding: 14px; border-radius: 10px; font-size: 16px; box-sizing: border-box; outline: none; transition: 0.2s;
         }
-        input:focus, select:focus { border-color: var(--primary); }
+        input:focus { border-color: var(--primary); }
 
+        /* Сегментированный контрол (Страна / Категория) */
+        .segment-control { display: flex; background: var(--bg); border-radius: 10px; padding: 3px; }
+        .segment-btn {
+            flex: 1; text-align: center; padding: 10px; font-size: 14px; font-weight: 600;
+            color: var(--secondary); border-radius: 8px; cursor: pointer; transition: 0.2s;
+        }
+        .segment-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+        /* Чипы для выбора нескольких состояний */
+        .chips-container { display: flex; flex-wrap: wrap; gap: 8px; }
+        .chip {
+            padding: 8px 14px; background: var(--bg); border: 1px solid var(--border);
+            border-radius: 20px; font-size: 14px; font-weight: 500; cursor: pointer; transition: 0.2s;
+        }
+        .chip.selected { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+        /* Кнопка */
         button.btn {
-            width: 100%; background: var(--primary); color: #fff; border: none; padding: 14px;
-            border-radius: 12px; font-size: 17px; font-weight: 600; cursor: pointer; margin-top: 10px;
+            width: 100%; background: var(--primary); color: #fff; border: none; padding: 16px;
+            border-radius: 12px; font-size: 17px; font-weight: bold; cursor: pointer; margin-top: 10px;
         }
         button.btn:active { transform: scale(0.98); }
+        button.btn.disabled { background: var(--secondary); cursor: not-allowed; }
 
-        .profile-header { text-align: center; margin-bottom: 20px; }
+        /* Профиль */
         .status-badge { display: inline-block; padding: 6px 16px; border-radius: 20px; font-weight: bold; font-size: 14px; margin-top: 5px; }
-        .status-free { background: rgba(255, 69, 58, 0.1); color: var(--danger); }
-        .status-premium { background: rgba(255, 214, 10, 0.1); color: var(--gold); }
+        .status-free { background: rgba(255, 59, 48, 0.1); color: var(--danger); }
+        .status-premium { background: rgba(255, 149, 0, 0.1); color: var(--gold); }
         
         .search-item {
             display: flex; justify-content: space-between; align-items: center;
-            background: rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 8px; margin-bottom: 10px;
+            background: var(--bg); padding: 14px; border-radius: 12px; margin-bottom: 10px;
         }
-        .search-info { font-size: 15px; }
-        .search-price { color: var(--green); font-weight: bold; font-size: 13px; }
-        .delete-btn { background: rgba(255, 69, 58, 0.2); color: var(--danger); border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-
-        .promo-box { border: 1px dashed var(--primary); background: rgba(10, 132, 255, 0.05); }
+        .delete-btn { background: rgba(255, 59, 48, 0.1); color: var(--danger); border: none; padding: 8px 14px; border-radius: 8px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -89,64 +100,88 @@
         <div class="tab" onclick="switchTab('premium')">👑 Premium</div>
     </div>
 
-    <!-- Вкладка ПОИСК -->
+    <!-- ВКЛАДКА: ПОИСК -->
     <div id="search" class="content active">
-        <div class="card">
-            <div class="input-group">
-                <label>Бренд</label>
-                <input type="text" id="brand" placeholder="Nike, Carhartt, Bape...">
+        
+        <!-- Выбор страны -->
+        <div class="input-group">
+            <div class="segment-control" id="domain-selector">
+                <div class="segment-btn active" data-val="vinted.fr" onclick="selectSegment('domain', this)">🇫🇷 Франция</div>
+                <div class="segment-btn" data-val="vinted.it" onclick="selectSegment('domain', this)">🇮🇹 Италия</div>
             </div>
+        </div>
+
+        <div class="card">
+            <!-- Бренд и Цена -->
             <div class="input-group">
-                <label>Размер</label>
-                <input type="text" id="size" placeholder="S, M, L, 42...">
+                <label>Бренд (Например: Nike)</label>
+                <input type="text" id="brand" placeholder="Оставьте пустым для поиска всего">
             </div>
             <div class="input-group">
                 <label>Макс. цена (€)</label>
-                <input type="number" id="max_price" placeholder="50">
+                <input type="number" id="max_price" placeholder="50.00">
             </div>
             <div class="input-group">
-                <label>Состояние</label>
-                <select id="condition">
-                    <option value="">Любое</option>
-                    <option value="neuf_avec_etiquette">Новое с биркой</option>
-                    <option value="tres_bon">Очень хорошее</option>
-                </select>
+                <label>Размер</label>
+                <input type="text" id="size" placeholder="S, M, 42...">
             </div>
-            <button class="btn" onclick="sendSearch()">🚀 Добавить поиск</button>
         </div>
+
+        <div class="card">
+            <!-- Категория -->
+            <div class="input-group">
+                <label>Категория</label>
+                <div class="segment-control" id="category-selector">
+                    <div class="segment-btn active" data-val="all" onclick="selectSegment('category', this)">Всё</div>
+                    <div class="segment-btn" data-val="clothes" onclick="selectSegment('category', this)">👕 Одежда</div>
+                    <div class="segment-btn" data-val="shoes" onclick="selectSegment('category', this)">👟 Обувь</div>
+                </div>
+            </div>
+
+            <!-- Состояние (Мультивыбор) -->
+            <div class="input-group">
+                <label>Состояние товара</label>
+                <div class="chips-container" id="conditions-container">
+                    <div class="chip" data-val="6" onclick="toggleChip(this)">Новое с биркой</div>
+                    <div class="chip" data-val="1" onclick="toggleChip(this)">Новое без бирки</div>
+                    <div class="chip" data-val="2" onclick="toggleChip(this)">Отличное</div>
+                    <div class="chip" data-val="3" onclick="toggleChip(this)">Хорошее</div>
+                    <div class="chip" data-val="4" onclick="toggleChip(this)">Нормальное</div>
+                </div>
+            </div>
+        </div>
+
+        <button id="submit-btn" class="btn" onclick="sendSearch()">🚀 Начать поиск</button>
     </div>
 
-    <!-- Вкладка ПРОФИЛЬ -->
+    <!-- ВКЛАДКА: ПРОФИЛЬ -->
     <div id="profile" class="content">
-        <div class="card profile-header">
+        <div class="card" style="text-align: center;">
             <h2 id="user-name" style="margin: 0 0 5px 0;">Загрузка...</h2>
-            <p style="color: var(--secondary); font-size: 14px; margin: 0 0 10px 0;">Chat ID: <span id="user-id">...</span></p>
+            <p style="color: var(--secondary); font-size: 14px; margin: 0 0 10px 0;">ID: <span id="user-id">...</span></p>
             <div id="status-container"></div>
         </div>
 
-        <h3 style="font-size: 16px; margin-bottom: 10px; color: var(--secondary);">Активные поиски:</h3>
+        <h3 style="font-size: 14px; margin-bottom: 10px; color: var(--secondary); text-transform: uppercase;">Мои поиски:</h3>
         <div id="searches-container"></div>
     </div>
 
-    <!-- Вкладка PREMIUM -->
+    <!-- ВКЛАДКА: PREMIUM -->
     <div id="premium" class="content">
-        <div class="card promo-box" style="text-align: center;">
-            <h3 style="color: var(--primary); margin-top: 0;">🎁 АКЦИЯ</h3>
-            <p style="font-size: 15px; line-height: 1.5; margin-bottom: 0;">
-                Пригласи <b>3 друзей</b> и получи<br>
-                <span style="color: var(--gold); font-weight: bold;">месяц подписки БЕСПЛАТНО!</span>
-            </p>
+        <div class="card" style="border: 1px solid var(--primary); background: rgba(0, 122, 255, 0.05);">
+            <h3 style="color: var(--primary); margin: 0 0 5px 0; text-align: center;">🎁 АКЦИЯ: 1+1</h3>
+            <p style="font-size: 15px; text-align: center; margin: 0;">Пригласи <b>3 друзей</b> и получи месяц подписки абсолютно бесплатно!</p>
         </div>
 
         <div class="card" style="text-align: center;">
-            <h2 style="color: var(--gold); margin-top: 0;">Vinted PRO</h2>
-            <ul style="text-align: left; color: var(--text); font-size: 15px; line-height: 2; margin-bottom: 20px; list-style-type: '⚡ ';">
-                <li><b>30 days</b> access</li>
-                <li><b>Unlimited</b> searches</li>
-                <li><b>Fast</b> instant alerts</li>
-            </ul>
-            <div style="font-size: 24px; font-weight: bold; margin-bottom: 15px;">10$ <span style="font-size: 14px; color: var(--secondary); font-weight: normal;">/ month</span></div>
-            
+            <h2 style="color: var(--gold); margin: 0 0 15px 0;">Vinted PRO</h2>
+            <div style="text-align: left; font-size: 15px; line-height: 2; margin-bottom: 20px;">
+                ✅ <b>30 Дней</b> неограниченного доступа<br>
+                ✅ <b>Безлимит</b> на добавление поисков<br>
+                ✅ <b>Франция и Италия</b> в реальном времени<br>
+                ✅ <b>Мгновенные</b> уведомления в чат
+            </div>
+            <div style="font-size: 28px; font-weight: bold; margin-bottom: 15px;">10$ <span style="font-size: 16px; color: var(--secondary);">/ мес.</span></div>
             <button class="btn" onclick="tg.openTelegramLink('https://t.me/liknine')">Связаться со мной (@liknine)</button>
         </div>
     </div>
@@ -156,79 +191,94 @@
         tg.expand();
 
         const urlParams = new URLSearchParams(window.location.search);
-        const userId = urlParams.get('id') || tg.initDataUnsafe?.user?.id || 'Неизвестно';
+        const userId = urlParams.get('id') || tg.initDataUnsafe?.user?.id || '—';
         const premiumDays = parseInt(urlParams.get('days') || '0');
         const userName = tg.initDataUnsafe?.user?.first_name || 'Пользователь';
         
         let userSearches = [];
-        try {
-            const searchesRaw = urlParams.get('searches');
-            if (searchesRaw) userSearches = JSON.parse(decodeURIComponent(searchesRaw));
-        } catch(e) {}
+        try { if (urlParams.get('searches')) userSearches = JSON.parse(decodeURIComponent(urlParams.get('searches'))); } catch(e) {}
 
+        // Заполнение профиля
         document.getElementById('user-name').innerText = userName;
         document.getElementById('user-id').innerText = userId;
-        
-        const statusContainer = document.getElementById('status-container');
-        if (premiumDays > 0) {
-            statusContainer.innerHTML = `<div class="status-badge status-premium">PREMIUM (Осталось: ${premiumDays} дн.)</div>`;
-        } else {
-            statusContainer.innerHTML = `<div class="status-badge status-free">FREE-ВЕРСИЯ</div>`;
+        document.getElementById('status-container').innerHTML = premiumDays > 0 
+            ? `<div class="status-badge status-premium">PREMIUM (Дней: ${premiumDays})</div>`
+            : `<div class="status-badge status-free">FREE-ВЕРСИЯ</div>`;
+
+        // Блокировка кнопки, если нет подписки
+        const submitBtn = document.getElementById('submit-btn');
+        if (premiumDays <= 0) {
+            submitBtn.classList.add('disabled');
+            submitBtn.innerText = "🔒 Требуется Premium";
         }
 
-        const searchesContainer = document.getElementById('searches-container');
+        // Рендер поисков
+        const sCont = document.getElementById('searches-container');
         if (userSearches.length === 0) {
-            searchesContainer.innerHTML = `<p style="color: var(--secondary); font-size: 14px; text-align: center;">Нет активных поисков.</p>`;
+            sCont.innerHTML = `<p style="color: var(--secondary); font-size: 14px; text-align: center;">Нет активных поисков.</p>`;
         } else {
-            searchesContainer.innerHTML = '';
-            userSearches.forEach(search => {
-                const priceText = search.max_price > 0 ? `до ${search.max_price}€` : 'любая цена';
-                const brandText = search.brand || 'Любой бренд';
-                searchesContainer.innerHTML += `
+            userSearches.forEach(s => {
+                const price = s.max_price > 0 ? `до ${s.max_price}€` : 'Любая цена';
+                const flag = s.domain === 'vinted.it' ? '🇮🇹' : '🇫🇷';
+                sCont.innerHTML += `
                     <div class="search-item">
                         <div>
-                            <div class="search-info"><b>${brandText}</b></div>
-                            <div class="search-price">${priceText}</div>
+                            <div style="font-size: 16px; font-weight: bold; margin-bottom: 4px;">${flag} ${s.brand || 'Любой бренд'}</div>
+                            <div style="color: var(--green); font-size: 13px; font-weight: bold;">${price}</div>
                         </div>
-                        <button class="delete-btn" onclick="deleteSearch(${search.id})">Удалить</button>
-                    </div>
-                `;
+                        <button class="delete-btn" onclick="deleteSearch(${s.id})">Удалить</button>
+                    </div>`;
             });
         }
 
+        // Логика UI
         function switchTab(tabId) {
-            document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.content, .tab').forEach(el => el.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             event.target.classList.add('active');
             try { tg.HapticFeedback.impactOccurred('light'); } catch(e){}
         }
 
+        function selectSegment(groupId, el) {
+            document.querySelectorAll(`#${groupId}-selector .segment-btn`).forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            try { tg.HapticFeedback.selectionChanged(); } catch(e){}
+        }
+
+        function toggleChip(el) {
+            el.classList.toggle('selected');
+            try { tg.HapticFeedback.selectionChanged(); } catch(e){}
+        }
+
+        // Отправка
         function sendSearch() {
-            if (premiumDays <= 0) {
-                tg.showAlert("У вас нет Premium-подписки!");
-                return;
-            }
+            if (premiumDays <= 0) { tg.showAlert("Купите Premium для использования Снайпера!"); return; }
+
+            const brand = document.getElementById('brand').value.trim();
+            const max_price = document.getElementById('max_price').value;
+            
+            if (!brand && !max_price) { tg.showAlert("Введите Бренд или Цену!"); return; }
+
+            // Собираем выбранные состояния (чипы)
+            const conditions = Array.from(document.querySelectorAll('#conditions-container .chip.selected')).map(el => parseInt(el.getAttribute('data-val')));
+
             const data = {
                 action: "add",
-                brand: document.getElementById('brand').value.trim(),
+                domain: document.querySelector('#domain-selector .active').getAttribute('data-val'),
+                category: document.querySelector('#category-selector .active').getAttribute('data-val'),
+                brand: brand,
                 size: document.getElementById('size').value.trim(),
-                max_price: document.getElementById('max_price').value,
-                condition: document.getElementById('condition').value
+                max_price: max_price,
+                conditions: conditions // Отправляем массив чисел [1, 2, 6]
             };
-            if (!data.brand && !data.max_price) {
-                tg.showAlert("Заполните хотя бы бренд или цену!");
-                return;
-            }
+
             try { tg.HapticFeedback.notificationOccurred('success'); } catch(e){}
             tg.sendData(JSON.stringify(data)); 
         }
 
         function deleteSearch(searchId) {
-            tg.showConfirm("Точно удалить этот поиск?", function(isConfirmed) {
-                if(isConfirmed) {
-                    tg.sendData(JSON.stringify({ action: "delete", search_id: searchId }));
-                }
+            tg.showConfirm("Удалить этот поиск?", function(isConfirmed) {
+                if(isConfirmed) tg.sendData(JSON.stringify({ action: "delete", search_id: searchId }));
             });
         }
     </script>
