@@ -197,6 +197,7 @@
     </div>
 
     <!-- ВКЛАДКА: PREMIUM -->
+        <!-- ВКЛАДКА: PREMIUM -->
     <div id="premium" class="content">
         <div class="card" style="background: rgba(10, 132, 255, 0.08); border-color: rgba(10, 132, 255, 0.2); text-align: center;">
             <h3 style="color: var(--primary); margin: 0 0 8px 0; font-size: 18px;">🎁 СЕКРЕТНАЯ АКЦИЯ</h3>
@@ -217,13 +218,21 @@
                 
                 <div style="font-size: 32px; font-weight: 800; margin-bottom: 20px;">10$ <span style="font-size: 16px; color: #8e8e93; font-weight: normal;">/ месяц</span></div>
                 
-                <button class="btn" style="background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; box-shadow: 0 4px 15px rgba(255, 165, 0, 0.4);" onclick="tg.openTelegramLink('https://t.me/liknine')">Написать @liknine</button>
+                <!-- НОВЫЕ КНОПКИ ОПЛАТЫ -->
+                <button class="btn" style="background: linear-gradient(135deg, #0a84ff, #005bb5); color: #fff; margin-bottom: 10px;" onclick="buyMethod('buy_stars')">
+                    ⭐️ Оплатить Звездами (500)
+                </button>
+                <button class="btn" style="background: linear-gradient(135deg, #2b5876, #4e4376); color: #fff; margin-bottom: 10px; box-shadow: 0 4px 15px rgba(78, 67, 118, 0.4);" onclick="buyMethod('buy_crypto')">
+                    🪙 Оплатить Криптой (USDT)
+                </button>
+                <button class="btn" style="background: #2c2c2e; color: #fff; font-size: 15px;" onclick="contactAdmin()">
+                    💳 Перевод на карту (Админ)
+                </button>
             </div>
         </div>
     </div>
 
     <script>
-        // ВЕСЬ JS ОСТАЛСЯ ТОЧНО ТАКИМ ЖЕ, КАК БЫЛ (Ради безопасности логики)
         let tg = window.Telegram.WebApp;
         tg.expand();
 
@@ -264,13 +273,16 @@
                     </div>`;
             });
         }
-
+                // Функция для связи с админом с предзаполненным текстом
+        function contactAdmin() {
+            try { tg.HapticFeedback.impactOccurred('medium'); } catch(e){}
+            const text = encodeURIComponent("Привет! Хочу купить Premium подписку. Мой ID: " + userId);
+            tg.openTelegramLink('https://t.me/liknine?text=' + text);
+        }
         function switchTab(tabId) {
             document.querySelectorAll('.content, .tab').forEach(el => el.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             event.target.classList.add('active');
-            
-            // Прячем нижнюю кнопку, если мы не на вкладке "Поиск"
             document.querySelector('.bottom-bar').style.display = tabId === 'search' ? 'block' : 'none';
             try { tg.HapticFeedback.impactOccurred('light'); } catch(e){}
         }
@@ -288,14 +300,11 @@
 
         function sendSearch() {
             if (premiumDays <= 0) { tg.showAlert("Купите Premium для использования Снайпера!"); return; }
-
             const brand = document.getElementById('brand').value.trim();
             const max_price = document.getElementById('max_price').value;
-            
             if (!brand && !max_price) { tg.showAlert("Введите Бренд или Цену!"); return; }
 
             const conditions = Array.from(document.querySelectorAll('#conditions-container .chip.selected')).map(el => parseInt(el.getAttribute('data-val')));
-
             const data = {
                 action: "add",
                 domain: document.querySelector('#domain-selector .active').getAttribute('data-val'),
@@ -305,7 +314,6 @@
                 max_price: max_price,
                 conditions: conditions 
             };
-
             try { tg.HapticFeedback.notificationOccurred('success'); } catch(e){}
             tg.sendData(JSON.stringify(data)); 
         }
@@ -315,6 +323,12 @@
             tg.showConfirm("Удалить этот поиск?", function(isConfirmed) {
                 if(isConfirmed) tg.sendData(JSON.stringify({ action: "delete", search_id: searchId }));
             });
+        }
+
+        // НОВАЯ ФУНКЦИЯ ДЛЯ КНОПОК ОПЛАТЫ
+        function buyMethod(method) {
+            try { tg.HapticFeedback.impactOccurred('medium'); } catch(e){}
+            tg.sendData(JSON.stringify({ action: method }));
         }
     </script>
 </body>
