@@ -1,493 +1,154 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vinted Sniper PRO</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        :root {
-            --bg: #f2f2f7; 
-            --surface: #ffffff; 
-            --primary: #007aff;
-            --text: #000000; 
-            --secondary: #8e8e93; 
-            --border: rgba(60, 60, 67, 0.1);
-            --danger: #ff3b30; 
-            --gold: #ffd700; 
-            --green: #34c759;
-            --glass-bg: rgba(255, 255, 255, 0.85); 
-            --input-bg: rgba(118, 118, 128, 0.08);
-        }
-
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg: #000000; 
-                --surface: #1c1c1e; 
-                --text: #ffffff;
-                --border: rgba(84, 84, 88, 0.3); 
-                --primary: #0a84ff;
-                --glass-bg: rgba(28, 28, 30, 0.85); 
-                --input-bg: rgba(118, 118, 128, 0.24);
-            }
-        }
-
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { 
-            margin: 0; 
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif; 
-            background-color: var(--bg); 
-            color: var(--text); 
-            padding-bottom: 110px;
-        }
-        
-        /* Верхнее меню */
-        .tab-bar { 
-            display: flex; background: var(--glass-bg); backdrop-filter: blur(20px); 
-            -webkit-backdrop-filter: blur(20px); padding: 10px 16px; position: sticky; 
-            top: 0; z-index: 100; border-bottom: 1px solid var(--border); gap: 10px; 
-        }
-        .tab { 
-            flex: 1; text-align: center; padding: 10px 0; font-size: 15px; font-weight: 600; 
-            color: var(--secondary); cursor: pointer; border-radius: 12px; transition: all 0.3s ease; 
-        }
-        .tab.active { background: var(--surface); color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        
-        .content { display: none; padding: 16px; animation: fadeIn 0.4s ease; }
-        .content.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        /* Карточки и инпуты */
-        .card { 
-            background: var(--surface); border-radius: 20px; padding: 20px; 
-            margin-bottom: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid var(--border); 
-        }
-        .section-title { font-size: 13px; font-weight: 700; color: var(--secondary); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
-        
-        .input-group { margin-bottom: 14px; display: flex; gap: 12px; }
-        .input-group:last-child { margin-bottom: 0; }
-        .input-wrapper { position: relative; flex: 1; }
-        .input-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 18px; color: var(--secondary); z-index: 1; }
-        input { 
-            width: 100%; background: var(--input-bg); border: 2px solid transparent; 
-            color: var(--text); padding: 16px 16px 16px 46px; border-radius: 16px; 
-            font-size: 16px; font-weight: 500; outline: none; transition: all 0.2s ease; 
-        }
-        input::placeholder { color: var(--secondary); font-weight: 400; }
-        input:focus { border-color: var(--primary); background: var(--surface); box-shadow: 0 4px 16px rgba(10, 132, 255, 0.15); }
-
-        /* Переключатели и чипы */
-        .segment-control { display: flex; flex-wrap: wrap; gap: 6px; background: var(--input-bg); border-radius: 14px; padding: 6px; }
-        .segment-btn { 
-            flex: 1; min-width: 30%; text-align: center; padding: 12px; font-size: 14px; 
-            font-weight: 600; color: var(--secondary); border-radius: 10px; cursor: pointer; 
-            transition: all 0.3s ease; position: relative; 
-        }
-        .segment-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 4px 12px rgba(0,0,0,0.08); transform: scale(1.02); }
-        
-        .chips-container { display: flex; flex-wrap: wrap; gap: 10px; }
-        .chip { 
-            padding: 12px 18px; background: var(--input-bg); border: 2px solid transparent; 
-            border-radius: 20px; font-size: 14px; font-weight: 600; cursor: pointer; 
-            transition: all 0.2s ease; color: var(--secondary); 
-        }
-        .chip.selected { background: var(--primary); color: #fff; box-shadow: 0 4px 12px rgba(10, 132, 255, 0.3); transform: translateY(-2px); }
-
-        /* Нижняя кнопка */
-        .bottom-bar { 
-            position: fixed; bottom: 0; left: 0; right: 0; padding: 16px 20px 32px; 
-            background: linear-gradient(to top, var(--bg) 70%, transparent); z-index: 100; pointer-events: none; 
-        }
-        button.btn { 
-            width: 100%; background: linear-gradient(135deg, #007aff, #005bb5); color: #fff; 
-            border: none; padding: 18px; border-radius: 16px; font-size: 17px; font-weight: 700; 
-            cursor: pointer; transition: all 0.2s ease; box-shadow: 0 8px 24px rgba(0, 122, 255, 0.3); pointer-events: auto; 
-        }
-        button.btn:active { transform: scale(0.96); opacity: 0.9; }
-        button.btn.disabled { background: var(--input-bg); color: var(--secondary); box-shadow: none; cursor: not-allowed; }
-
-        /* Профиль и список засад */
-        .profile-avatar { width: 72px; height: 72px; background: linear-gradient(135deg, #a18cd1, #fbc2eb); border-radius: 50%; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; font-size: 32px; box-shadow: 0 8px 20px rgba(161, 140, 209, 0.4); }
-        .status-badge { display: inline-block; padding: 8px 16px; border-radius: 20px; font-weight: 800; font-size: 12px; letter-spacing: 0.5px; }
-        .status-free { background: rgba(255, 59, 48, 0.1); color: var(--danger); }
-        .status-premium { background: linear-gradient(135deg, #ffd700, #ff9500); color: #000; box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3); }
-        
-        .search-item { background: var(--surface); padding: 18px; border-radius: 16px; margin-bottom: 12px; border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.02); display: flex; justify-content: space-between; align-items: center; }
-        .action-buttons { display: flex; gap: 8px; }
-        .action-buttons button { border: none; padding: 10px; border-radius: 12px; font-size: 16px; cursor: pointer; transition: 0.2s; }
-        .action-buttons button:active { transform: scale(0.9); }
-        .edit-btn { background: rgba(10, 132, 255, 0.1); color: var(--primary); }
-        .delete-btn { background: rgba(255, 59, 48, 0.1); color: var(--danger); }
-
-        /* Премиум Тарифы */
-        .premium-card { background: linear-gradient(145deg, #1c1c1e, #000000); border: 1px solid #38383a; color: white; border-radius: 24px; padding: 30px 20px; text-align: center; position: relative; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
-        .premium-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,215,0,0.15) 0%, transparent 60%); z-index: 0; pointer-events: none; }
-        .premium-content { position: relative; z-index: 1; }
-        .badge-hit { position: absolute; top: -10px; right: -10px; background: linear-gradient(135deg, #ff3b30, #ff9500); color: white; font-size: 11px; font-weight: 800; padding: 4px 8px; border-radius: 8px; border: 2px solid var(--surface); box-shadow: 0 4px 8px rgba(255,59,48,0.4); z-index: 2;}
-        .plan-price { font-size: 18px; color: var(--gold); font-weight: 800; margin-top: 4px; display: block; }
-        
-        .btn-col { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 10px 4px; }
-        .emoji-top { font-size: 22px; line-height: 1; }
-        
-        .plans-grid { display: flex; flex-wrap: wrap; gap: 18px 8px; background: rgba(255,255,255,0.05); border-radius: 14px; padding: 16px 8px 8px 8px; justify-content: center; }
-        .plans-grid .segment-btn { margin: 0 !important; position: relative; }
-        .plan-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); white-space: nowrap; z-index: 2; }
-        .plan-month { background: rgba(255, 215, 0, 0.08) !important; border: 1px solid rgba(255, 215, 0, 0.4); }
-        .segment-btn.active.plan-month { background: var(--surface) !important; border-color: #ffd700; }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Vinted Sniper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
+  <div class="app-shell">
+    <header class="hero">
+      <div class="hero__left">
+        <div class="brand-chip">Vinted Sniper</div>
+        <h1>Лови нужные вещи <span>без мусора</span></h1>
+        <p>Сначала бот отправляет до 10 последних релевантных товаров, затем уходит в засаду и присылает только новые.</p>
+      </div>
+      <div class="hero__stats" id="heroStats"></div>
+    </header>
 
-    <!-- НАВИГАЦИЯ -->
-    <div class="tab-bar">
-        <div class="tab active" onclick="switchTab('search')">🔍 Поиск</div>
-        <div class="tab" onclick="switchTab('profile')">👤 Профиль</div>
-        <div class="tab" onclick="switchTab('premium')">👑 Premium</div>
+    <section class="card premium-card">
+      <div class="section-head">
+        <div>
+          <h2>Подписка Premium</h2>
+          <p>Цены и способы оплаты сохранены</p>
+        </div>
+        <button class="ghost-btn" id="showPlansBtn">Открыть тарифы</button>
+      </div>
+      <div class="plan-strip" id="planStrip"></div>
+    </section>
+
+    <section class="grid-2">
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h2 id="formTitle">Новая засада</h2>
+            <p>Собери фильтры и запусти поиск</p>
+          </div>
+          <button class="ghost-btn hidden" id="cancelEditBtn">Отмена</button>
+        </div>
+
+        <form id="searchForm" class="search-form">
+          <div class="field field--full">
+            <label for="query">Что искать</label>
+            <input id="query" name="query" type="text" placeholder="Например: bape tiger" maxlength="120" required>
+            <small>Можно писать фразу целиком. Бот сам разобьёт её на варианты поиска.</small>
+          </div>
+
+          <div class="field-row field-row--2">
+            <div class="field">
+              <label for="domain">Домены Vinted</label>
+              <select id="domain" name="domain" multiple size="5">
+                <option value="vinted.fr" selected>vinted.fr</option>
+                <option value="vinted.pl">vinted.pl</option>
+                <option value="vinted.it">vinted.it</option>
+                <option value="vinted.es">vinted.es</option>
+                <option value="vinted.de">vinted.de</option>
+                <option value="vinted.be">vinted.be</option>
+              </select>
+              <small>Можно выбрать несколько доменов</small>
+            </div>
+
+            <div class="field-stack">
+              <div class="field">
+                <label for="category">Категория</label>
+                <select id="category" name="category">
+                  <option value="all">Все категории</option>
+                  <option value="clothes">Одежда</option>
+                  <option value="shoes">Обувь</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="size">Размер</label>
+                <input id="size" name="size" type="text" placeholder="M, L, XL / 42 / 44">
+              </div>
+            </div>
+          </div>
+
+          <div class="field-row field-row--3">
+            <div class="field">
+              <label for="min_price">Мин. цена</label>
+              <input id="min_price" name="min_price" type="number" min="0" step="0.01" placeholder="0">
+            </div>
+            <div class="field">
+              <label for="max_price">Макс. цена</label>
+              <input id="max_price" name="max_price" type="number" min="0" step="0.01" placeholder="100">
+            </div>
+            <div class="field">
+              <label for="minus_words">Минус-слова</label>
+              <input id="minus_words" name="minus_words" type="text" placeholder="kids, fake, woman">
+            </div>
+          </div>
+
+          <div class="field field--full">
+            <label>Состояние</label>
+            <div class="chip-grid" id="conditionChips"></div>
+          </div>
+
+          <div class="submit-bar">
+            <button type="submit" class="primary-btn" id="submitBtn">Создать засаду</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h2>Твои засады</h2>
+            <p id="searchCountLabel">0 активных поисков</p>
+          </div>
+        </div>
+        <div class="search-list" id="searchList"></div>
+      </section>
+    </section>
+  </div>
+
+  <div class="modal hidden" id="plansModal">
+    <div class="modal__backdrop" data-close="plansModal"></div>
+    <div class="modal__content">
+      <div class="section-head">
+        <div>
+          <h2>Выбери Premium</h2>
+          <p>Telegram Stars или Crypto Bot</p>
+        </div>
+        <button class="icon-btn" data-close="plansModal">✕</button>
+      </div>
+      <div class="plans-grid" id="plansGrid"></div>
     </div>
+  </div>
 
-    <!-- ВКЛАДКА: ПОИСК (СОЗДАНИЕ ЗАСАДЫ) -->
-    <div id="search" class="content active">
-        <div class="card">
-            <div class="section-title">География парсинга (можно выбрать несколько)</div>
-            <div class="segment-control" id="domain-selector">
-                <!-- ЗДЕСЬ ИСПРАВЛЕНЫ КНОПКИ ДЛЯ МУЛЬТИ-ВЫБОРА СТРАН -->
-                <div class="segment-btn active" data-val="vinted.fr" onclick="toggleDomain(this)">🇫🇷 FR</div>
-                <div class="segment-btn" data-val="vinted.it" onclick="toggleDomain(this)">🇮🇹 IT</div>
-                <div class="segment-btn" data-val="vinted.pl" onclick="toggleDomain(this)">🇵🇱 PL</div>
-                <div class="segment-btn" data-val="vinted.es" onclick="toggleDomain(this)">🇪🇸 ES</div>
-                <div class="segment-btn" data-val="vinted.de" onclick="toggleDomain(this)">🇩🇪 DE</div>
-            </div>
+  <template id="searchCardTemplate">
+    <article class="search-card">
+      <div class="search-card__top">
+        <div>
+          <div class="search-card__title"></div>
+          <div class="search-card__meta"></div>
         </div>
+        <span class="pill">Активен</span>
+      </div>
+      <div class="search-card__filters"></div>
+      <div class="search-card__actions">
+        <button class="ghost-btn search-edit">Редактировать</button>
+        <button class="danger-btn search-delete">Удалить</button>
+      </div>
+    </article>
+  </template>
 
-        <div class="card">
-            <div class="section-title">Что ищем?</div>
-            <div class="input-group">
-                <div class="input-wrapper">
-                    <span class="input-icon">🏷️</span>
-                    <input type="text" id="brand" placeholder="Бренд (Nike, Carhartt...)">
-                </div>
-            </div>
-            
-            <div class="input-group">
-                <div class="input-wrapper">
-                    <span class="input-icon">💶</span>
-                    <input type="number" id="min_price" placeholder="Мин. цена">
-                </div>
-                <div class="input-wrapper">
-                    <span class="input-icon">💶</span>
-                    <input type="number" id="max_price" placeholder="Макс. цена">
-                </div>
-            </div>
-
-            <div class="input-group">
-                <div class="input-wrapper">
-                    <span class="input-icon">📏</span>
-                    <input type="text" id="size" placeholder="Размер (S, M, 42...)">
-                </div>
-            </div>
-            
-            <!-- МИНУС СЛОВА -->
-            <div class="input-group" style="margin-top: 14px;">
-                <div class="input-wrapper">
-                    <span class="input-icon">🚫</span>
-                    <input type="text" id="minus_words" placeholder="Исключить слова (через запятую)">
-                </div>
-            </div>
-        </div>
-
-        <div class="card" style="margin-bottom: 100px;">
-            <!-- ЖЕЛЕЗОБЕТОННЫЕ КАТЕГОРИИ -->
-            <div class="section-title">Категория</div>
-            <div class="segment-control" id="category-selector" style="margin-bottom: 24px; align-items: stretch;">
-                <div class="segment-btn active btn-col" data-val="all" onclick="selectSegment('category', this)">Все</div>
-                <div class="segment-btn btn-col" data-val="clothes" onclick="selectSegment('category', this)">
-                    <span class="emoji-top">👕</span>
-                    <span>Одежда</span>
-                </div>
-                <div class="segment-btn btn-col" data-val="shoes" onclick="selectSegment('category', this)">
-                    <span class="emoji-top">👟</span>
-                    <span>Обувь</span>
-                </div>
-            </div>
-
-            <div class="section-title">Состояние</div>
-            <div class="chips-container" id="conditions-container">
-                <div class="chip" data-val="6" onclick="toggleChip(this)">Новое с биркой</div>
-                <div class="chip" data-val="1" onclick="toggleChip(this)">Новое без бирки</div>
-                <div class="chip" data-val="2" onclick="toggleChip(this)">Отличное</div>
-                <div class="chip" data-val="3" onclick="toggleChip(this)">Хорошее</div>
-                <div class="chip" data-val="4" onclick="toggleChip(this)">Нормальное</div>
-            </div>
-        </div>
-
-        <div class="bottom-bar">
-            <button id="submit-btn" class="btn" onclick="sendSearch()">🚀 Начать охоту</button>
-        </div>
-    </div>
-
-    <!-- ВКЛАДКА: ПРОФИЛЬ -->
-    <div id="profile" class="content">
-        <div class="card" style="text-align: center; padding: 32px 20px;">
-            <div class="profile-avatar">👨‍💻</div>
-            <h2 id="user-name" style="margin: 0 0 6px 0; font-size: 24px; font-weight: 800;">Загрузка...</h2>
-            <p style="color: var(--secondary); font-size: 14px; margin: 0 0 20px 0; font-family: monospace;">ID: <span id="user-id">...</span></p>
-            <div id="status-container"></div>
-        </div>
-        <div class="section-title" style="margin-left: 8px;">Мои активные засады</div>
-        <div id="searches-container"></div>
-    </div>
-
-    <!-- ВКЛАДКА: PREMIUM -->
-    <div id="premium" class="content">
-        <div class="premium-card">
-            <div class="premium-content">
-                <div style="font-size: 48px; margin-bottom: 12px; filter: drop-shadow(0 0 10px rgba(255,215,0,0.5));">👑</div>
-                <h2 style="margin: 0 0 24px 0; color: #ffd700; font-size: 26px; font-weight: 800;">Vinted Sniper PRO</h2>
-                
-                <div class="section-title" style="color: #8e8e93; text-align: left; margin-bottom: 16px;">1. Выберите тариф:</div>
-                
-                <div class="plans-grid" id="plan-selector" style="margin-bottom: 24px;">
-                    <div class="segment-btn active" data-val="week" onclick="selectPlan(this)" style="flex: 1 1 28%;">Неделя <span class="plan-price">3$</span></div>
-                    <div class="segment-btn plan-month" data-val="month" onclick="selectPlan(this)" style="flex: 1 1 28%;">
-                        <div class="plan-badge" style="background: linear-gradient(135deg, #ff3b30, #ff9500); color: white; box-shadow: 0 4px 8px rgba(255,59,48,0.4);">🔥 ХИТ</div>
-                        Месяц <span class="plan-price">10$</span>
-                    </div>
-                    <div class="segment-btn" data-val="3months" onclick="selectPlan(this)" style="flex: 1 1 28%;">3 Месяца <span class="plan-price">25$</span></div>
-                    <div class="segment-btn" data-val="year" onclick="selectPlan(this)" style="flex: 1 1 45%;">
-                        <div class="plan-badge" style="background: linear-gradient(135deg, #af52de, #5e5ce6); color: white; box-shadow: 0 4px 8px rgba(175, 82, 222, 0.4);">🚀 МЕГА ХИТ</div>
-                        1 Год <span class="plan-price">100$</span>
-                    </div>
-                    <div class="segment-btn" data-val="forever" onclick="selectPlan(this)" style="flex: 1 1 45%;">Навсегда <span class="plan-price">150$</span></div>
-                </div>
-
-                <div class="section-title" style="color: #8e8e93; text-align: left; margin-bottom: 16px;">2. Метод оплаты:</div>
-
-                <button class="btn" style="background: linear-gradient(135deg, #0a84ff, #005bb5); margin-bottom: 12px; position: relative; z-index: 10;" onclick="buyMethod('buy_stars')">⭐️ Оплатить Звездами</button>
-                <button class="btn" style="background: linear-gradient(135deg, #2b5876, #4e4376); margin-bottom: 12px; box-shadow: 0 8px 24px rgba(78, 67, 118, 0.4); position: relative; z-index: 10;" onclick="buyMethod('buy_crypto')">🪙 Оплатить Криптой (USDT)</button>
-                <button class="btn" style="background: rgba(255,255,255,0.1); color: #fff; font-size: 15px; box-shadow: none; position: relative; z-index: 10;" onclick="contactAdmin()">💳 Перевод на карту (Админ)</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- СКРИПТЫ И ЛОГИКА -->
-    <script>
-        let tg = window.Telegram.WebApp;
-        tg.expand();
-        try { tg.setHeaderColor('secondary_bg_color'); } catch(e) {}
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const userId = urlParams.get('id') || tg.initDataUnsafe?.user?.id || '—';
-        const premiumDays = parseInt(urlParams.get('days') || '0');
-        const userName = tg.initDataUnsafe?.user?.first_name || 'Пользователь';
-        
-        let userSearches = [];
-        let currentEditId = null; 
-        
-        try { 
-            if (urlParams.get('searches')) {
-                userSearches = JSON.parse(decodeURIComponent(urlParams.get('searches'))); 
-            }
-        } catch(e) { console.error("Ошибка загрузки поисков", e); }
-
-        document.getElementById('user-name').innerText = userName;
-        document.getElementById('user-id').innerText = userId;
-        document.getElementById('status-container').innerHTML = premiumDays > 0 
-            ? `<div class="status-badge status-premium">★ PREMIUM (${premiumDays} ДН.)</div>`
-            : `<div class="status-badge status-free">🔴 БЕЗ ПОДПИСКИ</div>`;
-
-        const submitBtn = document.getElementById('submit-btn');
-        if (premiumDays <= 0) {
-            submitBtn.classList.add('disabled');
-            submitBtn.innerText = "🔒 Требуется Premium";
-        }
-
-        // Отрисовка списка поисков
-        const flags = { 'vinted.fr': '🇫🇷', 'vinted.it': '🇮🇹', 'vinted.pl': '🇵🇱', 'vinted.es': '🇪🇸', 'vinted.de': '🇩🇪' };
-        const sCont = document.getElementById('searches-container');
-        
-        if (userSearches.length === 0) {
-            sCont.innerHTML = `<div class="card" style="text-align: center; color: var(--secondary); font-size: 14px; border: 2px dashed var(--border);">У вас пока нет активных засад</div>`;
-        } else {
-            userSearches.forEach(s => {
-                let priceText = "Любая цена";
-                let minP = s.min_price && s.min_price > 0 ? s.min_price : null;
-                let maxP = s.max_price && s.max_price > 0 ? s.max_price : null;
-                
-                if (minP && maxP) priceText = `${minP}€ - ${maxP}€`;
-                else if (minP) priceText = `от ${minP}€`;
-                else if (maxP) priceText = `до ${maxP}€`;
-                
-                // ЗДЕСЬ ИСПРАВЛЕН ВЫВОД ФЛАГОВ ДЛЯ МУЛЬТИ-СТРАН
-                const domainArray = (s.domain || 'vinted.fr').split(',');
-                const flag = domainArray.map(d => flags[d.trim()] || '🌐').join(' ');
-                
-                sCont.innerHTML += `
-                    <div class="search-item">
-                        <div>
-                            <div style="font-size: 17px; font-weight: 800; margin-bottom: 4px;">${flag} ${s.brand || 'Любой бренд'}</div>
-                            <div style="color: var(--green); font-size: 14px; font-weight: 700;">💰 ${priceText}</div>
-                        </div>
-                        <div class="action-buttons">
-                            <button class="edit-btn" onclick="startEdit(${s.id})">✏️</button>
-                            <button class="delete-btn" onclick="deleteSearch(${s.id})">🗑</button>
-                        </div>
-                    </div>`;
-            });
-        }
-
-        // Переключение вкладок
-        function switchTab(tabId) {
-            document.querySelectorAll('.content, .tab').forEach(el => el.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            event.target.classList.add('active');
-            document.querySelector('.bottom-bar').style.display = tabId === 'search' ? 'block' : 'none';
-            try { tg.HapticFeedback.impactOccurred('light'); } catch(e){}
-        }
-
-        // Обычные переключатели (категории, тарифы)
-        function selectSegment(groupId, el) {
-            document.querySelectorAll(`#${groupId}-selector .segment-btn`).forEach(b => b.classList.remove('active'));
-            el.classList.add('active');
-            try { tg.HapticFeedback.selectionChanged(); } catch(e){}
-        }
-
-        // ЗДЕСЬ ДОБАВЛЕНА НОВАЯ ФУНКЦИЯ ДЛЯ МУЛЬТИ-ВЫБОРА СТРАН
-        function toggleDomain(el) {
-            const activeDomains = document.querySelectorAll('#domain-selector .active');
-            // Не даем снять выделение с последней активной страны
-            if (el.classList.contains('active') && activeDomains.length === 1) {
-                try { tg.HapticFeedback.notificationOccurred('warning'); } catch(e){}
-                return;
-            }
-            el.classList.toggle('active');
-            try { tg.HapticFeedback.selectionChanged(); } catch(e){}
-        }
-
-        function selectPlan(el) {
-            document.querySelectorAll('#plan-selector .segment-btn').forEach(b => b.classList.remove('active'));
-            el.classList.add('active');
-            try { tg.HapticFeedback.selectionChanged(); } catch(e){}
-        }
-
-        function toggleChip(el) {
-            el.classList.toggle('selected');
-            try { tg.HapticFeedback.selectionChanged(); } catch(e){}
-        }
-
-        // Редактирование
-        function startEdit(id) {
-            const s = userSearches.find(x => x.id === id);
-            if (!s) return;
-            
-            currentEditId = id;
-            try { tg.HapticFeedback.impactOccurred('medium'); } catch(e){}
-            
-            document.getElementById('brand').value = s.brand || '';
-            document.getElementById('min_price').value = (s.min_price && s.min_price > 0) ? s.min_price : '';
-            document.getElementById('max_price').value = (s.max_price && s.max_price > 0) ? s.max_price : '';
-            document.getElementById('size').value = s.size || '';
-            document.getElementById('minus_words').value = s.minus_words || '';
-            
-            // ЗДЕСЬ ИСПРАВЛЕНО ДЛЯ МУЛЬТИ-СТРАН
-            const savedDomains = (s.domain || 'vinted.fr').split(',').map(d => d.trim());
-            document.querySelectorAll('#domain-selector .segment-btn').forEach(b => {
-                if (savedDomains.includes(b.getAttribute('data-val'))) {
-                    b.classList.add('active');
-                } else {
-                    b.classList.remove('active');
-                }
-            });
-
-            document.querySelectorAll('#category-selector .segment-btn').forEach(b => {
-                b.classList.remove('active');
-                if (b.getAttribute('data-val') === s.category) b.classList.add('active');
-            });
-            
-            document.querySelectorAll('#conditions-container .chip').forEach(c => c.classList.remove('selected'));
-            if (s.conditions) {
-                try {
-                    const conds = JSON.parse(s.conditions);
-                    document.querySelectorAll('#conditions-container .chip').forEach(c => {
-                        if (conds.includes(parseInt(c.getAttribute('data-val')))) c.classList.add('selected');
-                    });
-                } catch(e) {}
-            }
-            
-            const btn = document.getElementById('submit-btn');
-            btn.innerText = "💾 Сохранить изменения";
-            btn.style.background = "linear-gradient(135deg, #34c759, #28a745)";
-            
-            switchTab('search');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        // Флаг защиты от двойного нажатия (ЗДЕСЬ ИСПРАВЛЕНО ДВОЙНОЕ СОЗДАНИЕ)
-        let isSubmitting = false;
-
-        function sendSearch() {
-            if (isSubmitting) return; // Блокируем, если уже нажато
-            
-            if (premiumDays <= 0) { tg.showAlert("Купите Premium для использования Снайпера!"); return; }
-            
-            const brand = document.getElementById('brand').value.trim();
-            const min_price = document.getElementById('min_price').value;
-            const max_price = document.getElementById('max_price').value;
-            
-            if (!brand && !max_price) { tg.showAlert("Введите Бренд или Макс. Цену!"); return; }
-
-            // Блокируем кнопку визульно и логически
-            isSubmitting = true;
-            const btn = document.getElementById('submit-btn');
-            const originalText = btn.innerText;
-            btn.innerText = "⏳ Отправка...";
-            btn.style.opacity = "0.7";
-
-            const conditions = Array.from(document.querySelectorAll('#conditions-container .chip.selected')).map(el => parseInt(el.getAttribute('data-val')));
-            
-            // ЗДЕСЬ СОБИРАЕТСЯ МАССИВ СТРАН
-            const selectedDomains = Array.from(document.querySelectorAll('#domain-selector .active')).map(el => el.getAttribute('data-val'));
-            
-            const data = {
-                action: currentEditId ? "edit" : "add",
-                search_id: currentEditId,
-                domain: selectedDomains, // Массив стран летит в питон
-                category: document.querySelector('#category-selector .active').getAttribute('data-val'),
-                brand: brand,
-                size: document.getElementById('size').value.trim(),
-                min_price: min_price,
-                max_price: max_price,
-                minus_words: document.getElementById('minus_words').value.trim(),
-                conditions: conditions 
-            };
-            
-            try { tg.HapticFeedback.notificationOccurred('success'); } catch(e){}
-            tg.sendData(JSON.stringify(data)); 
-
-            // На случай если WebApp не закрылся сразу, разблокируем кнопку через 2 секунды
-            setTimeout(() => {
-                isSubmitting = false;
-                btn.innerText = originalText;
-                btn.style.opacity = "1";
-            }, 2000);
-        }
-
-        function deleteSearch(searchId) {
-            try { tg.HapticFeedback.impactOccurred('medium'); } catch(e){}
-            tg.showConfirm("Снять эту засаду?", function(isConfirmed) {
-                if(isConfirmed) tg.sendData(JSON.stringify({ action: "delete", search_id: searchId }));
-            });
-        }
-
-        function buyMethod(method) {
-            try { tg.HapticFeedback.impactOccurred('medium'); } catch(e){}
-            const plan = document.querySelector('#plan-selector .active').getAttribute('data-val');
-            tg.sendData(JSON.stringify({ action: method, plan: plan }));
-        }
-
-        function contactAdmin() {
-            try { tg.HapticFeedback.impactOccurred('medium'); } catch(e){}
-            tg.openTelegramLink('https://t.me/liknine?text=' + encodeURIComponent("Привет! Хочу купить подписку. Мой ID: " + userId));
-        }
-    </script>
+  <script src="app.js"></script>
 </body>
 </html>
