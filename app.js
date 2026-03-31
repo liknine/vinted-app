@@ -1,7 +1,6 @@
 (function () {
   'use strict';
 
-  // ── Telegram WebApp ──
   const tg = window.Telegram && window.Telegram.WebApp;
   if (tg) {
     tg.ready();
@@ -10,7 +9,7 @@
     tg.setBackgroundColor('#06090f');
   }
 
-  // ── Parse URL params ──
+  // ── URL params ──
   const params = new URLSearchParams(window.location.search);
   const userId = params.get('id') || '0';
   const premiumDays = parseInt(params.get('days') || '0', 10);
@@ -21,16 +20,23 @@
     searches = [];
   }
 
-  // ── Plans ──
+  // ── Config ──
   const PLANS = {
-    week:     { name: '1 Неделя',  crypto: '3.00',   stars: 150  },
-    month:    { name: '1 Месяц',   crypto: '10.00',  stars: 500,  popular: true },
-    '3months':{ name: '3 Месяца',  crypto: '25.00',  stars: 1250 },
-    year:     { name: '1 Год',     crypto: '100.00', stars: 5000 },
-    forever:  { name: 'Навсегда',  crypto: '150.00', stars: 7500 },
+    week:      { name: '1 Неделя',  crypto: '3.00',   stars: 150 },
+    month:     { name: '1 Месяц',   crypto: '10.00',  stars: 500,  popular: true },
+    '3months': { name: '3 Месяца',  crypto: '25.00',  stars: 1250 },
+    year:      { name: '1 Год',     crypto: '100.00', stars: 5000 },
+    forever:   { name: 'Навсегда',  crypto: '150.00', stars: 7500 },
   };
 
-  // ── Conditions ──
+  const DOMAINS = [
+    { value: 'vinted.fr', flag: '🇫🇷', label: 'Франция' },
+    { value: 'vinted.de', flag: '🇩🇪', label: 'Германия' },
+    { value: 'vinted.it', flag: '🇮🇹', label: 'Италия' },
+    { value: 'vinted.es', flag: '🇪🇸', label: 'Испания' },
+    { value: 'vinted.pl', flag: '🇵🇱', label: 'Польша' },
+  ];
+
   const CONDITIONS = [
     { id: '6', label: 'Новое с бирками' },
     { id: '1', label: 'Новое' },
@@ -42,10 +48,11 @@
   // ── State ──
   let editingId = null;
   let selectedConditions = new Set();
+  let selectedDomains = new Set(['vinted.fr']);
 
-  // ── DOM refs ──
-  const $ = (sel) => document.querySelector(sel);
-  const $$ = (sel) => document.querySelectorAll(sel);
+  // ── DOM ──
+  const $ = (s) => document.querySelector(s);
+  const $$ = (s) => document.querySelectorAll(s);
 
   const tabPages = $$('.tab-page');
   const navItems = $$('.nav-item');
@@ -56,39 +63,74 @@
   const searchList = $('#searchList');
   const searchCountLabel = $('#searchCountLabel');
   const conditionChips = $('#conditionChips');
+  const domainGrid = $('#domainGrid');
   const toastEl = $('#toast');
 
   // ── Tabs ──
   navItems.forEach(btn => {
     btn.addEventListener('click', () => {
-      const tabId = btn.dataset.tab;
+      const id = btn.dataset.tab;
       tabPages.forEach(p => p.classList.remove('active'));
       navItems.forEach(n => n.classList.remove('active'));
-      $('#' + tabId).classList.add('active');
+      $('#' + id).classList.add('active');
       btn.classList.add('active');
     });
   });
 
   // ── Toast ──
-  let toastTimeout;
+  let toastTimer;
   function showToast(msg) {
     toastEl.textContent = msg;
     toastEl.classList.remove('hidden');
-    clearTimeout(toastTimeout);
-    toastTimeout = setTimeout(() => toastEl.classList.add('hidden'), 2800);
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.add('hidden'), 2800);
   }
 
-  // ── Send data to bot ──
+  // ── Send to bot ──
   function sendData(data) {
     if (tg) {
       tg.sendData(JSON.stringify(data));
     } else {
       console.log('sendData:', data);
-      showToast('Данные отправлены (dev mode)');
+      showToast('Отправлено (dev)');
     }
   }
 
-  // ── Render conditions chips ──
+  function escHtml(s) {
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  // ── Render domains ──
+  function renderDomains() {
+    domainGrid.innerHTML = '';
+    DOMAINS.forEach(d => {
+      const el = document.createElement('div');
+      el.className = 'domain-item' + (selectedDomains.has(d.value) ? ' active' : '');
+      el.innerHTML = `
+        <span class="domain-flag">${d.flag}</span>
+        <span class="domain-label">${d.label}</span>
+        <div class="domain-check"><div class="domain-check-inner"></div></div>
+      `;
+      el.addEventListener('click', () => {
+        if (selectedDomains.has(d.value)) {
+          if (selectedDomains.size > 1) {
+            selectedDomains.delete(d.value);
+            el.classList.remove('active');
+          } else {
+            showToast('Нужен хотя бы один домен');
+          }
+        } else {
+          selectedDomains.add(d.value);
+          el.classList.add('active');
+        }
+      });
+      domainGrid.appendChild(el);
+    });
+  }
+
+  // ── Render conditions ──
   function renderConditions() {
     conditionChips.innerHTML = '';
     CONDITIONS.forEach(c => {
@@ -108,7 +150,7 @@
     });
   }
 
-  // ── Render profile tab ──
+  // ── Render profile ──
   function renderProfile() {
     const user = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
     if (user) {
@@ -117,36 +159,34 @@
       $('#profileUsername').textContent = user.username ? '@' + user.username : '';
     }
     $('#statId').textContent = userId;
-    $('#statPremium').textContent = premiumDays > 0 ? '✅ Активен' : '❌ Нет';
+    $('#statPremium').textContent = premiumDays > 0 ? 'Активен' : 'Нет';
     $('#statDays').textContent = premiumDays;
     $('#statSearches').textContent = searches.length;
   }
 
-  // ── Render subscription tab ──
+  // ── Render subscription ──
   function renderSubscription() {
-    // Status card
+    const dot = $('#subStatusDot');
     if (premiumDays > 0) {
-      $('#subStatusIcon').textContent = '🟢';
-      $('#subStatusTitle').textContent = `Premium активен — ${premiumDays} дн.`;
+      dot.className = 'sub-status-dot on';
+      $('#subStatusTitle').textContent = `Premium — ${premiumDays} дн.`;
       $('#subStatusDesc').textContent = 'Ты можешь создавать и редактировать засады';
     } else {
-      $('#subStatusIcon').textContent = '🔴';
+      dot.className = 'sub-status-dot off';
       $('#subStatusTitle').textContent = 'Premium не активен';
-      $('#subStatusDesc').textContent = 'Оформи подписку, чтобы создавать засады';
+      $('#subStatusDesc').textContent = 'Оформи подписку для работы бота';
     }
 
-    // Plans
     const list = $('#plansList');
     list.innerHTML = '';
 
     Object.entries(PLANS).forEach(([key, plan]) => {
       const card = document.createElement('div');
       card.className = 'plan-card' + (plan.popular ? ' popular' : '');
-
       card.innerHTML = `
         <div class="plan-head">
           <div class="plan-name">${plan.name}</div>
-          ${plan.popular ? '<span class="plan-popular-badge">Популярный</span>' : ''}
+          ${plan.popular ? '<span class="plan-badge">Популярный</span>' : ''}
         </div>
         <div class="plan-prices">
           <div>⭐️ ${plan.stars} Stars</div>
@@ -155,28 +195,25 @@
         <div class="plan-actions">
           <button class="btn-stars" data-plan="${key}" data-method="stars">⭐️ Stars</button>
           <button class="btn-crypto" data-plan="${key}" data-method="crypto">💎 Crypto</button>
-          <button class="btn-card" data-plan="${key}" data-method="card">💳 Карта</button>
+          <button class="btn-card-pay" data-plan="${key}" data-method="card">💳 Карта</button>
         </div>
       `;
 
-      // Button handlers
       card.querySelectorAll('button').forEach(btn => {
         btn.addEventListener('click', () => {
-          const planKey = btn.dataset.plan;
-          const method = btn.dataset.method;
-
-          if (method === 'stars') {
-            sendData({ action: 'buy_stars', plan: planKey });
-          } else if (method === 'crypto') {
-            sendData({ action: 'buy_crypto', plan: planKey });
-          } else if (method === 'card') {
-            // Open @liknine in Telegram
+          const m = btn.dataset.method;
+          const p = btn.dataset.plan;
+          if (m === 'stars') {
+            sendData({ action: 'buy_stars', plan: p });
+          } else if (m === 'crypto') {
+            sendData({ action: 'buy_crypto', plan: p });
+          } else {
             if (tg) {
               tg.openTelegramLink('https://t.me/liknine');
             } else {
               window.open('https://t.me/liknine', '_blank');
             }
-            showToast('Напиши @liknine для оплаты по карте');
+            showToast('Напиши @liknine для оплаты картой');
           }
         });
       });
@@ -185,16 +222,16 @@
     });
   }
 
-  // ── Render search list ──
+  // ── Render searches ──
   function renderSearches() {
     searchList.innerHTML = '';
-    searchCountLabel.textContent = `${searches.length} активных`;
+    searchCountLabel.textContent = searches.length;
 
     if (!searches.length) {
       searchList.innerHTML = `
         <div class="empty-state">
-          <div class="empty-state-icon">🔍</div>
-          <div class="empty-state-text">Нет активных засад.<br>Создай первую выше!</div>
+          <div class="empty-state-icon">—</div>
+          <div class="empty-state-text">Нет активных засад<br>Создай первую во вкладке «Поиск»</div>
         </div>
       `;
       return;
@@ -207,17 +244,17 @@
       const domains = (s.domain || 'vinted.fr').split(',').map(d => d.trim()).join(', ');
       const filters = [];
       if (s.category && s.category !== 'all') filters.push(s.category === 'clothes' ? 'Одежда' : 'Обувь');
-      if (s.size) filters.push(`Size: ${s.size}`);
-      if (s.min_price > 0) filters.push(`от ${s.min_price}`);
-      if (s.max_price > 0) filters.push(`до ${s.max_price}`);
-      if (s.minus_words) filters.push(`−${s.minus_words}`);
+      if (s.size) filters.push('Size: ' + s.size);
+      if (s.min_price > 0) filters.push('от ' + s.min_price);
+      if (s.max_price > 0) filters.push('до ' + s.max_price);
+      if (s.minus_words) filters.push('−' + s.minus_words);
 
       let condLabels = [];
       try {
         const conds = typeof s.conditions === 'string' ? JSON.parse(s.conditions) : (s.conditions || []);
         conds.forEach(c => {
-          const found = CONDITIONS.find(x => x.id === String(c));
-          if (found) condLabels.push(found.label);
+          const f = CONDITIONS.find(x => x.id === String(c));
+          if (f) condLabels.push(f.label);
         });
       } catch(e) {}
 
@@ -234,14 +271,14 @@
           ${condLabels.map(c => `<span class="filter-tag">${escHtml(c)}</span>`).join('')}
         </div>
         <div class="search-card-actions">
-          <button class="btn-secondary edit-btn">✏️ Изменить</button>
-          <button class="btn-danger delete-btn">🗑 Удалить</button>
+          <button class="btn-secondary edit-btn">Изменить</button>
+          <button class="btn-danger delete-btn">Удалить</button>
         </div>
       `;
 
       card.querySelector('.edit-btn').addEventListener('click', () => startEdit(s));
       card.querySelector('.delete-btn').addEventListener('click', () => {
-        if (confirm(`Удалить засаду "${s.query}"?`)) {
+        if (confirm('Удалить засаду «' + s.query + '»?')) {
           sendData({ action: 'delete', search_id: s.id });
         }
       });
@@ -250,12 +287,12 @@
     });
   }
 
-  // ── Edit search ──
+  // ── Edit ──
   function startEdit(s) {
     editingId = s.id;
     formTitle.textContent = 'Редактирование';
     cancelEditBtn.classList.remove('hidden');
-    submitBtn.innerHTML = '<span>✏️</span> Сохранить';
+    submitBtn.textContent = 'Сохранить';
 
     $('#query').value = s.query || '';
     $('#size').value = s.size || '';
@@ -264,14 +301,14 @@
     $('#minus_words').value = s.minus_words || '';
     $('#category').value = s.category || 'all';
 
-    // Set domains
-    const domainSelect = $('#domain');
-    const doms = (s.domain || 'vinted.fr').split(',').map(d => d.trim());
-    Array.from(domainSelect.options).forEach(opt => {
-      opt.selected = doms.includes(opt.value);
+    selectedDomains.clear();
+    (s.domain || 'vinted.fr').split(',').forEach(d => {
+      d = d.trim();
+      if (DOMAINS.some(x => x.value === d)) selectedDomains.add(d);
     });
+    if (!selectedDomains.size) selectedDomains.add('vinted.fr');
+    renderDomains();
 
-    // Set conditions
     selectedConditions.clear();
     try {
       const conds = typeof s.conditions === 'string' ? JSON.parse(s.conditions) : (s.conditions || []);
@@ -279,7 +316,12 @@
     } catch(e) {}
     renderConditions();
 
-    // Scroll to form
+    // Switch to search tab
+    tabPages.forEach(p => p.classList.remove('active'));
+    navItems.forEach(n => n.classList.remove('active'));
+    $('#tabSearches').classList.add('active');
+    navItems[0].classList.add('active');
+
     $('#formCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
@@ -287,36 +329,29 @@
     editingId = null;
     formTitle.textContent = 'Новая засада';
     cancelEditBtn.classList.add('hidden');
-    submitBtn.innerHTML = '<span>🚀</span> Создать засаду';
+    submitBtn.textContent = 'Создать засаду';
     searchForm.reset();
     selectedConditions.clear();
+    selectedDomains.clear();
+    selectedDomains.add('vinted.fr');
     renderConditions();
-    // Reset domain to default
-    const domainSelect = $('#domain');
-    Array.from(domainSelect.options).forEach(opt => {
-      opt.selected = opt.value === 'vinted.fr';
-    });
+    renderDomains();
   }
 
   cancelEditBtn.addEventListener('click', cancelEdit);
 
-  // ── Form submit ──
+  // ── Submit ──
   searchForm.addEventListener('submit', (e) => {
     e.preventDefault();
-
     const query = $('#query').value.trim();
     if (!query) {
-      showToast('Введи, что искать!');
+      showToast('Введи, что искать');
       return;
     }
 
-    const domainSelect = $('#domain');
-    const selectedDomains = Array.from(domainSelect.selectedOptions).map(o => o.value);
-    if (!selectedDomains.length) selectedDomains.push('vinted.fr');
-
     const data = {
       query: query,
-      domain: selectedDomains,
+      domain: Array.from(selectedDomains),
       category: $('#category').value,
       size: $('#size').value.trim(),
       min_price: parseFloat($('#min_price').value) || 0,
@@ -328,24 +363,16 @@
     if (editingId) {
       data.action = 'edit';
       data.search_id = editingId;
+      showToast('Засада обновляется…');
+    } else {
+      showToast('Засада создаётся…');
     }
 
     sendData(data);
-    if (!editingId) {
-      showToast('Засада создаётся…');
-    } else {
-      showToast('Засада обновляется…');
-    }
   });
 
-  // ── Helpers ──
-  function escHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-  }
-
   // ── Init ──
+  renderDomains();
   renderConditions();
   renderProfile();
   renderSubscription();
