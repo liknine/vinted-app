@@ -16,11 +16,10 @@
     <!-- ═══ TAB 1: SEARCHES ═══ -->
     <div class="tab-page active" id="tabSearches">
       <div class="page-header">
-        <h1>🎯 Засады</h1>
-        <p class="subtitle" id="searchCountLabel">0 активных</p>
+        <h1>Поиск</h1>
+        <p class="subtitle">Настрой фильтры и запусти засаду</p>
       </div>
 
-      <!-- Search Form -->
       <div class="card" id="formCard">
         <div class="card-head">
           <h2 id="formTitle">Новая засада</h2>
@@ -31,38 +30,26 @@
           <div class="form-group">
             <label for="query">Что искать</label>
             <input id="query" name="query" type="text" placeholder="bape tiger, nike dunk..." maxlength="120" required>
-            <span class="hint">Бот сам разобьёт фразу на варианты поиска</span>
+            <span class="hint">Бот сам разобьёт фразу на варианты</span>
+          </div>
+
+          <div class="form-group">
+            <label>Домены Vinted</label>
+            <div class="domain-grid" id="domainGrid"></div>
           </div>
 
           <div class="row-2">
             <div class="form-group">
-              <label for="domain">Домены</label>
-              <select id="domain" name="domain" multiple size="4">
-                <option value="vinted.fr" selected>🇫🇷 vinted.fr</option>
-                <option value="vinted.de">🇩🇪 vinted.de</option>
-                <option value="vinted.pl">🇵🇱 vinted.pl</option>
-                <option value="vinted.it">🇮🇹 vinted.it</option>
-                <option value="vinted.es">🇪🇸 vinted.es</option>
-                <option value="vinted.be">🇧🇪 vinted.be</option>
-                <option value="vinted.nl">🇳🇱 vinted.nl</option>
-                <option value="vinted.pt">🇵🇹 vinted.pt</option>
-                <option value="vinted.co.uk">🇬🇧 vinted.co.uk</option>
-                <option value="vinted.cz">🇨🇿 vinted.cz</option>
+              <label for="category">Кат��гория</label>
+              <select id="category" name="category">
+                <option value="all">Все</option>
+                <option value="clothes">Одежда</option>
+                <option value="shoes">Обувь</option>
               </select>
             </div>
-            <div class="col-stack">
-              <div class="form-group">
-                <label for="category">Категория</label>
-                <select id="category" name="category">
-                  <option value="all">Все</option>
-                  <option value="clothes">Одежда</option>
-                  <option value="shoes">Обувь</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="size">Размер</label>
-                <input id="size" name="size" type="text" placeholder="M, L, XL / 42">
-              </div>
+            <div class="form-group">
+              <label for="size">Размер</label>
+              <input id="size" name="size" type="text" placeholder="M, L, XL / 42">
             </div>
           </div>
 
@@ -87,23 +74,20 @@
           </div>
 
           <button type="submit" class="btn-primary full-w" id="submitBtn">
-            <span>🚀</span> Создать засаду
+            Создать засаду
           </button>
         </form>
       </div>
-
-      <!-- Search List -->
-      <div id="searchList" class="search-list"></div>
     </div>
 
     <!-- ═══ TAB 2: PROFILE ═══ -->
     <div class="tab-page" id="tabProfile">
       <div class="page-header">
-        <h1>👤 Профиль</h1>
-        <p class="subtitle">Информация об аккаунте</p>
+        <h1>Профиль</h1>
+        <p class="subtitle">Аккаунт и активные засады</p>
       </div>
 
-      <div class="card">
+      <div class="card profile-card">
         <div class="profile-avatar" id="profileAvatar">?</div>
         <div class="profile-name" id="profileName">—</div>
         <div class="profile-username" id="profileUsername">—</div>
@@ -111,28 +95,28 @@
 
       <div class="stats-grid">
         <div class="stat-card">
-          <div class="stat-icon">🆔</div>
+          <div class="stat-icon-box">ID</div>
           <div class="stat-info">
             <div class="stat-label">Telegram ID</div>
             <div class="stat-value" id="statId">—</div>
           </div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon">👑</div>
+          <div class="stat-icon-box st-premium">PRO</div>
           <div class="stat-info">
             <div class="stat-label">Premium</div>
             <div class="stat-value" id="statPremium">—</div>
           </div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon">📆</div>
+          <div class="stat-icon-box st-days">D</div>
           <div class="stat-info">
             <div class="stat-label">Дней осталось</div>
             <div class="stat-value" id="statDays">—</div>
           </div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon">🎯</div>
+          <div class="stat-icon-box st-searches">S</div>
           <div class="stat-info">
             <div class="stat-label">Активных засад</div>
             <div class="stat-value" id="statSearches">—</div>
@@ -140,8 +124,17 @@
         </div>
       </div>
 
+      <!-- Active searches moved here -->
+      <div class="card">
+        <div class="card-head">
+          <h2>Активные засады</h2>
+          <span class="counter-badge" id="searchCountLabel">0</span>
+        </div>
+        <div id="searchList" class="search-list"></div>
+      </div>
+
       <div class="card tip-card">
-        <div class="tip-icon">💡</div>
+        <div class="tip-marker">i</div>
         <div>
           <strong>Как работает бот</strong>
           <p>Создай засаду → бот отправит до 10 последних товаров → потом следит и шлёт только новые.</p>
@@ -152,12 +145,12 @@
     <!-- ═══ TAB 3: SUBSCRIPTION ═══ -->
     <div class="tab-page" id="tabSubscription">
       <div class="page-header">
-        <h1>💎 Подписка</h1>
+        <h1>Подписка</h1>
         <p class="subtitle">Выбери план и способ оплаты</p>
       </div>
 
       <div class="sub-status-card card" id="subStatusCard">
-        <div class="sub-status-icon" id="subStatusIcon">🔴</div>
+        <div class="sub-status-dot" id="subStatusDot"></div>
         <div>
           <div class="sub-status-title" id="subStatusTitle">Premium не активен</div>
           <div class="sub-status-desc" id="subStatusDesc">Оформи подписку, чтобы создавать засады</div>
@@ -170,15 +163,15 @@
     <!-- ═══ BOTTOM NAV ═══ -->
     <nav class="bottom-nav">
       <button class="nav-item active" data-tab="tabSearches">
-        <span class="nav-icon">🎯</span>
-        <span class="nav-label">Засады</span>
+        <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+        <span class="nav-label">Поиск</span>
       </button>
       <button class="nav-item" data-tab="tabProfile">
-        <span class="nav-icon">👤</span>
+        <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         <span class="nav-label">Профиль</span>
       </button>
       <button class="nav-item" data-tab="tabSubscription">
-        <span class="nav-icon">💎</span>
+        <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"/></svg>
         <span class="nav-label">Подписка</span>
       </button>
     </nav>
